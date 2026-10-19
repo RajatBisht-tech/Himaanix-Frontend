@@ -1,340 +1,307 @@
-import React from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import {
+    Instagram,
+    Facebook,
+    Youtube,
+    CheckCircle2,
+    ArrowRight,
+} from "lucide-react";
+
+const legalLinks = [
+    { label: "Contact Us", href: "/contact" },
+    { label: "Shipping & Delivery", href: "/shipping" },
+    { label: "Return Policy", href: "/returns" },
+    { label: "Refund Policy", href: "/refund-policy" },
+    { label: "Privacy Policy", href: "/privacy-policy" },
+    { label: "Terms & Conditions", href: "/Terms" },
+];
+
+const companyLinks = [
+    { label: "About Us", href: "/about" },
+    { label: "Careers", href: "/careers" },
+    { label: "Sustainability", href: "/sustainability" },
+    { label: "Blog", href: "/blog" },
+];
+
+const shopLinks = [
+    { label: "Women", href: "/shop?category=Women" },
+    { label: "Men", href: "/shop?category=Men" },
+    { label: "Kids", href: "/shop?category=Kids" },
+    { label: "New Arrivals", href: "/shop?category=New%20Arrivals" },
+    { label: "Collections", href: "/shop" },
+];
+
+function FooterLinks({ title, links }) {
+    return (
+        <div className="min-w-0">
+            <h3 className="mb-5 text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-500">
+                {title}
+            </h3>
+
+            <ul className="space-y-3">
+                {links.map((item) => (
+                    <li key={item.label}>
+                        <Link
+                            to={item.href}
+                            className="text-sm text-slate-600 transition-colors hover:text-pink-600"
+                        >
+                            {item.label}
+                        </Link>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+}
 
 export default function Footer() {
-  return (
-    <footer className="bg-[#1A1110] text-[#EFE6DD] mt-24">
+    const [email, setEmail] = useState("");
+    const [subscribed, setSubscribed] = useState(false);
 
-      {/* Main Footer */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 grid grid-cols-2 md:grid-cols-5 gap-10">
+    const handleSubscribe = (event) => {
+        event.preventDefault();
 
-        {/* Brand */}
-        <div className="col-span-2">
-          <div className="font-serif text-3xl tracking-[0.28em]">
-            HIMAANIX
-          </div>
+        if (!email.trim()) return;
 
-          <p className="mt-4 text-sm text-[#EFE6DD]/60 max-w-sm leading-relaxed">
-            Fashion that speaks before you do. Editorial pieces crafted for
-            the modern wardrobe — considered, tactile, timeless.
-          </p>
+        // Connect this handler to your newsletter API to save subscriptions.
+        setSubscribed(true);
+        setEmail("");
+    };
 
-          {/* Company Legal Information */}
-          {/* Company Legal Information */}
-          <div className="mt-8 max-w-sm">
-            <div className="hx-eyebrow text-[#C89D66] mb-4">
-              HIMAANIX TRADING PRIVATE LIMITED
-            </div>
+    return (
+        <footer className="w-full border-t border-gray-100 bg-white text-slate-900">
+            {/* Newsletter */}
+            <section className="border-b border-gray-100 px-5 py-12 sm:px-8 sm:py-14 lg:px-12">
+                <div className="mx-auto w-full max-w-4xl text-center">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-pink-600">
+                        A little something for your inbox
+                    </p>
 
-            <div className="space-y-5 text-xs text-[#EFE6DD]/55 leading-relaxed">
+                    <h2 className="mt-3 font-serif text-3xl tracking-[0.12em] sm:text-4xl">
+                        THE HIMAANIX EDIT
+                    </h2>
 
-              {/* Delhi Registration */}
-              <div>
-                <p className="text-[#EFE6DD] font-semibold mb-2">
-                  Delhi Registration
-                </p>
+                    <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-gray-500">
+                        Discover new collections, exclusive offers and inspiration
+                        for your everyday style.
+                    </p>
 
-                <p>
-                  <span className="text-[#EFE6DD]/80">GSTIN:</span>{" "}
-                  07AAICH8742H1ZA
-                </p>
+                    <form
+                        onSubmit={handleSubscribe}
+                        className="mx-auto mt-6 flex max-w-xl flex-col gap-3 sm:flex-row"
+                    >
+                        <input
+                            type="email"
+                            required
+                            value={email}
+                            onChange={(event) => {
+                                setEmail(event.target.value);
+                                setSubscribed(false);
+                            }}
+                            placeholder="Enter your email address"
+                            aria-label="Email address"
+                            className="h-12 min-w-0 flex-1 border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-slate-900"
+                        />
 
-                <p>
-                  <span className="text-[#EFE6DD]/80">Registered Office:</span>{" "}
-                  1295 First Floor, Pan Mandi, Sadar Bazar,
-                  Delhi — 110006
-                </p>
-              </div>
+                        <button
+                            type="submit"
+                            className="inline-flex h-12 items-center justify-center gap-2 bg-slate-900 px-8 text-[10px] font-bold uppercase tracking-[0.18em] text-white transition hover:bg-pink-600"
+                        >
+                            {subscribed ? (
+                                <>
+                                    <CheckCircle2 size={16} />
+                                    Subscribed
+                                </>
+                            ) : (
+                                <>
+                                    Subscribe
+                                    <ArrowRight size={14} />
+                                </>
+                            )}
+                        </button>
+                    </form>
 
-              {/* Rajasthan Registration */}
-              <div>
-                <p className="text-[#EFE6DD] font-semibold mb-2">
-                  Rajasthan Registration
-                </p>
-
-                <p>
-                  <span className="text-[#EFE6DD]/80">GSTIN:</span>{" "}
-                  08AAICH8742H1Z8
-                </p>
-
-                <p>
-                  <span className="text-[#EFE6DD]/80">Registered Office:</span>{" "}
-                  F-105 Vijay Laxmi Tower, Central Spine,
-                  Vidhyadhar Nagar, Jaipur, Rajasthan — 302039
-                </p>
-              </div>
-
-              {/* Corporate Information */}
-              <div>
-                <p>
-                  <span className="text-[#EFE6DD]/80">CIN:</span>{" "}
-                  U47711DC2026PTC473946
-                </p>
-
-               <p>
-  <span className="text-[#EFE6DD]/80">
-    Grievance Officer:
-  </span>{" "}
-  Premjeet
-</p>
-
-<p>
-  <span className="text-[#EFE6DD]/80">
-    Grievance Officer Email:
-  </span>{" "}
-  himaanixtrading@gmail.com
-</p>
-
-<p>
-  <span className="text-[#EFE6DD]/80">
-    Grievance Officer Mobile:
-  </span>{" "}
-  +91 9650300157
-</p>
-
-                <p>
-                  <span className="text-[#EFE6DD]/80">
-                    Contact & Support Mobile:
-                  </span>{" "}
-                  +91 8958975608
-                </p>
-                <p>
-                  <span className="text-[#EFE6DD]/80">
-                    Contact & Support Email:
-                  </span>{" "}
-                  himaanixtrading@gmail.com
-                </p>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        {/* Legal */}
-        <div>
-          <div className="hx-eyebrow text-[#C89D66] mb-4">
-            Legal
-          </div>
-
-          <ul className="space-y-2 text-sm">
-
-            <li>
-              <Link
-                to="/contact"
-                className="hover:text-[#C89D66] transition-colors"
-              >
-                Contact Us
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/shipping"
-                className="hover:text-[#C89D66] transition-colors"
-              >
-                Shipping & Delivery
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/returns"
-                className="hover:text-[#C89D66] transition-colors"
-              >
-                Return Policy
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/refund-policy"
-                className="hover:text-[#C89D66] transition-colors"
-              >
-                Refund Policy
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/privacy-policy"
-                className="hover:text-[#C89D66] transition-colors"
-              >
-                Privacy Policy
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/terms-conditions"
-                className="hover:text-[#C89D66] transition-colors"
-              >
-                Terms & Conditions
-              </Link>
-            </li>
-
-          </ul>
-        </div>
-
-        {/* Company */}
-        <div>
-          <div className="hx-eyebrow text-[#C89D66] mb-4">
-            Company
-          </div>
-
-          <ul className="space-y-2 text-sm">
-
-            <li>
-              <Link
-                to="/about-us"
-                className="hover:text-[#C89D66] transition-colors"
-              >
-                About Us
-              </Link>
-            </li>
-
-            {/* <li>
-              <Link
-                to="/our-story"
-                className="hover:text-[#C89D66] transition-colors"
-              >
-                Our Story
-              </Link>
-            </li> */}
-
-            <li>
-              <Link
-                to="/careers"
-                className="hover:text-[#C89D66] transition-colors"
-              >
-                Careers
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/sustainability"
-                className="hover:text-[#C89D66] transition-colors"
-              >
-                Sustainability
-              </Link>
-            </li>
-
-          </ul>
-        </div>
-
-        {/* Shop */}
-        <div>
-          <div className="hx-eyebrow text-[#C89D66] mb-4">
-            Shop
-          </div>
-
-          <ul className="space-y-2 text-sm">
-
-            <li>
-              <Link
-                to="/women"
-                className="hover:text-[#C89D66] transition-colors"
-              >
-                Women
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/men"
-                className="hover:text-[#C89D66] transition-colors"
-              >
-                Men
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/kids"
-                className="hover:text-[#C89D66] transition-colors"
-              >
-                Kids
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/new-arrivals"
-                className="hover:text-[#C89D66] transition-colors"
-              >
-                New Arrivals
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                to="/collections"
-                className="hover:text-[#C89D66] transition-colors"
-              >
-                Collections
-              </Link>
-            </li>
-
-          </ul>
-        </div>
-
-      </div>
-
-
-
-      {/* Bottom Footer */}
-      <div className="border-t border-[#EFE6DD]/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-6">
-
-          {/* Copyright */}
-          <div className="text-xs text-[#EFE6DD]/50">
-            © {new Date().getFullYear()} HIMAANIX TRADING PRIVATE LIMITED.
-            All rights reserved.
-          </div>
-
-          {/* Payment Methods */}
-          <div>
-            <div className="text-sm font-semibold text-white mb-3">
-              Payment Methods
-            </div>
-
-            <div className="flex items-center gap-2">
-
-              {/* VISA */}
-              <div className="w-[55px] h-[32px] rounded-md bg-[#1A237E] flex items-center justify-center">
-                <span className="text-white italic font-bold text-[13px] tracking-tight">
-                  VISA
-                </span>
-              </div>
-
-              {/* Mastercard */}
-              <div className="w-[45px] h-[32px] rounded-md bg-white flex items-center justify-center">
-                <div className="relative w-[24px] h-[18px]">
-                  <span className="absolute left-0 top-[2px] w-[15px] h-[15px] rounded-full bg-[#EB001B]" />
-                  <span className="absolute right-0 top-[2px] w-[15px] h-[15px] rounded-full bg-[#F79E1B]" />
+                    {subscribed && (
+                        <p role="status" className="mt-3 text-sm text-green-700">
+                            Thank you for subscribing to Himaanix.
+                        </p>
+                    )}
                 </div>
-              </div>
+            </section>
 
-              {/* Payoneer */}
-              <div className="w-[65px] h-[32px] rounded-md bg-white flex items-center justify-center">
-                <span className="text-[#E54B23] font-semibold text-[10px]">
-                  Payoneer
-                </span>
-              </div>
+            {/* Footer columns — wider */}
+            <section className="mx-auto grid w-full max-w-[1600px] grid-cols-2 gap-x-8 gap-y-10 px-6 py-12 sm:px-10 md:grid-cols-3 lg:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] lg:gap-x-14 lg:px-12 lg:py-14 xl:px-16">
+                {/* Brand and company information */}
+                <div className="col-span-2 min-w-0 md:col-span-3 lg:col-span-1">
+                    <Link
+                        to="/"
+                        aria-label="Himaanix home"
+                        className="inline-flex items-center gap-3"
+                    >
+                        <img
+                            src="/logo.png"
+                            alt="Himaanix logo"
+                            className="h-16 w-25 shrink-0 object-contain"
+                        />
 
-              {/* Affirm */}
-              <div className="w-[53px] h-[32px] rounded-md bg-white flex items-center justify-center">
-                <span className="text-[#1769FF] italic font-semibold text-[11px]">
-                  affirm
-                </span>
-              </div>
+                        <span className="flex flex-col">
+                            <span className="font-serif text-xl tracking-[0.2em] text-slate-900">
+                                HIMAANIX
+                            </span>
+                            <span className="mt-1 text-[8px] uppercase tracking-[0.2em] text-gray-500">
+                                Fashion for every you
+                            </span>
+                        </span>
+                    </Link>
 
+                    <p className="mt-5 max-w-md text-sm leading-6 text-gray-600">
+                        Fashion that speaks before you do. Editorial pieces crafted
+                        for the modern wardrobe — considered, tactile and timeless.
+                    </p>
+
+                    <div className="mt-7 space-y-5 text-xs leading-5 text-gray-600">
+                        <div>
+                            <h4 className="mb-2 font-semibold text-slate-900">
+                                Himaanix Trading Private Limited
+                            </h4>
+
+                            <p className="font-medium text-slate-800">
+                                Delhi Registration
+                            </p>
+                            <p>GSTIN: 07AAICH8742H1ZA</p>
+                            <p>
+                                Registered Office: 1295 First Floor, Pan Mandi,
+                                Sadar Bazar, Delhi — 110006
+                            </p>
+                        </div>
+
+                        <div>
+                            <p className="font-medium text-slate-800">
+                                Rajasthan Registration
+                            </p>
+                            <p>GSTIN: 08AAICH8742H1Z8</p>
+                            <p>
+                                Registered Office: F-105 Vijay Laxmi Tower,
+                                Central Spine, Vidhyadhar Nagar, Jaipur,
+                                Rajasthan — 302039
+                            </p>
+                        </div>
+
+                        <div className="space-y-2 break-words">
+                            <p>CIN: U47711DC2026PTC473946</p>
+
+                            <p>
+                                Grievance Officer:{" "}
+                                <span className="font-medium text-slate-900">
+                                    Premjeet
+                                </span>
+                            </p>
+
+                            <p>
+                                Grievance Officer Email:{" "}
+                                <a
+                                    href="mailto:himaanixtrading@gmail.com"
+                                    className="hover:text-pink-600"
+                                >
+                                    himaanixtrading@gmail.com
+                                </a>
+                            </p>
+
+                            <p>
+                                Grievance Officer Mobile:{" "}
+                                <a
+                                    href="tel:+919650300157"
+                                    className="hover:text-pink-600"
+                                >
+                                    +91 9650300157
+                                </a>
+                            </p>
+
+                            <p>
+                                Contact &amp; Support Mobile:{" "}
+                                <a
+                                    href="tel:+918958975608"
+                                    className="hover:text-pink-600"
+                                >
+                                    +91 8958975608
+                                </a>
+                            </p>
+
+                            <p>
+                                Contact &amp; Support Email:{" "}
+                                <a
+                                    href="mailto:himaanixtrading@gmail.com"
+                                    className="hover:text-pink-600"
+                                >
+                                    himaanixtrading@gmail.com
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Legal */}
+                <FooterLinks title="Legal" links={legalLinks} />
+
+                {/* Company */}
+                <FooterLinks title="Company" links={companyLinks} />
+
+                {/* Shop and social links */}
+                <div className="min-w-0">
+                    <FooterLinks title="Shop" links={shopLinks} />
+
+                    <div className="mt-7">
+                        <h3 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-500">
+                            Follow Us
+                        </h3>
+
+                        <div className="flex items-center gap-4">
+                            <a
+                                href="https://instagram.com"
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label="Instagram"
+                                className="text-slate-600 transition hover:text-pink-600"
+                            >
+                                <Instagram size={19} strokeWidth={1.6} />
+                            </a>
+
+                            <a
+                                href="https://facebook.com"
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label="Facebook"
+                                className="text-slate-600 transition hover:text-pink-600"
+                            >
+                                <Facebook size={19} strokeWidth={1.6} />
+                            </a>
+
+                            <a
+                                href="https://youtube.com"
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label="YouTube"
+                                className="text-slate-600 transition hover:text-pink-600"
+                            >
+                                <Youtube size={20} strokeWidth={1.6} />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Copyright */}
+            <div className="border-t border-gray-200 px-6 py-5 sm:px-10 lg:px-12 xl:px-16">
+                <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-2 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+                    <p>
+                        © {new Date().getFullYear()} Himaanix Trading Private Limited.
+                        All rights reserved.
+                    </p>
+
+                    <p>Made with care in India</p>
+                </div>
             </div>
-          </div>
-
-        </div>
-      </div>
-
-    </footer>
-  );
+        </footer>
+    );
 }

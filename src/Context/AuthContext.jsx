@@ -1,50 +1,83 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import api from "@/lib/api";
+import { createContext, useContext, useMemo, useState } from "react";
 
 const AuthContext = createContext(null);
 
-export const useAuth = () => useContext(AuthContext);
+const readStoredUser = () => {
+  const user = localStorage.getItem("user") || sessionStorage.getItem("user");
+  if (!user) return null;
+
+  try {
+    return JSON.parse(user);
+  } catch {
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("user");
+    return null;
+  }
+};
+
+const getStoredToken = () => {
+  const token =
+    localStorage.getItem("himaanix_token") ||
+    sessionStorage.getItem("himaanix_token");
+  if (token) return token;
+
+  const storage = localStorage.getItem("token")
+    ? localStorage
+    : sessionStorage.getItem("token")
+      ? sessionStorage
+      : null;
+  const legacyToken = storage?.getItem("token");
+
+  if (legacyToken && storage) {
+    storage.setItem("himaanix_token", legacyToken);
+    storage.removeItem("token");
+  }
+
+  return legacyToken;
+};
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(getStoredToken);
+  const [user, setUser] = useState(readStoredUser);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await api.get("/auth/me");
-        setUser(data.user);
-      } catch (e) {
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+  const signIn = (nextToken, nextUser, rememberMe) => {
+    const storage = rememberMe ? localStorage : sessionStorage;
+    const otherStorage = rememberMe ? sessionStorage : localStorage;
 
-  const login = async (email, password) => {
-    const { data } = await api.post("/auth/login", { email, password });
-    if (data.access_token) localStorage.setItem("hx_token", data.access_token);
-    setUser(data.user);
-    return data.user;
+    otherStorage.removeItem("himaanix_token");
+    otherStorage.removeItem("token");
+    otherStorage.removeItem("user");
+    storage.setItem("himaanix_token", nextToken);
+    storage.setItem("user", JSON.stringify(nextUser));
+    setToken(nextToken);
+    setUser(nextUser);
   };
 
-  const register = async (name, email, password, mobile) => {
-    const { data } = await api.post("/auth/register", { name, email, password, mobile });
-    if (data.access_token) localStorage.setItem("hx_token", data.access_token);
-    setUser(data.user);
-    return data.user;
-  };
-
-  const logout = async () => {
-    try { await api.post("/auth/logout"); } catch (e) {}
-    localStorage.removeItem("hx_token");
+  const signOut = () => {
+    localStorage.removeItem("himaanix_token");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("himaanix_token");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    setToken(null);
     setUser(null);
   };
 
-  return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({ token, user, signIn, signOut }),
+    [token, user]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error("useAuth must be used within AuthProvider");
+  }
+
+  return context;
 }
