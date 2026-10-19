@@ -5,7 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 
 import App from "./App.jsx";
 import { AuthProvider } from "./Context/AuthContext.jsx";
-import { StoreProvider } from "./context/StoreContext.jsx";
+import { StoreProvider } from "./Context/StoreContext.jsx";
 import "./styles.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
