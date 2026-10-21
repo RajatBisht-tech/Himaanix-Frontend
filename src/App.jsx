@@ -30,7 +30,8 @@ import Refund from "./pages/Refund.jsx"
 import Terms from "./pages/TermsConditions.jsx"
 import Careers from "./pages/Careers.jsx";
 import Sustainability from "./pages/Sustainability.jsx";
-import Blog from "./pages/Blog.jsx"
+import Blog from "./pages/Blog.jsx";
+import AdminOrdersPage from "./pages/AdminOrdersPage.jsx";
 
 function ScrollToTop() {
     const { pathname } = useLocation();
@@ -78,6 +79,8 @@ export default function App() {
                    <Route path="/sustainability" element={<Sustainability/>} />
                    <Route path="/blog/:slug" element={<Blog/>} />
                    <Route path="/blog" element={<Blog/>} />
+                   <Route path="/admin" element={<AdminOrdersPage />} />
+                   <Route path="/admin/orders" element={<AdminOrdersPage />} />
                 </Routes>
             </main>
 
