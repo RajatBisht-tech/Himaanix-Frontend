@@ -221,8 +221,6 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* Category Navigation */}
-            <CategoryScroller />
 
             {/* Price Drop & Best Deals */}
             <section className="bg-white px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
