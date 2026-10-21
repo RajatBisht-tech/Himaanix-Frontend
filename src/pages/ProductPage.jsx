@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Heart, ShoppingBag, X } from "lucide-react";
 import { getProductBySlug } from "../api/productApi.js";
+import { getShoeBySlug } from "../api/shoeApi.js";
+import { getWatchBySlug } from "../api/watchApi.js";
 import { products as demoProducts } from "../data/products.js";
 import { useStore } from "../context/StoreContext.jsx";
 import "./ProductPage.css";
@@ -13,14 +15,17 @@ const money = (amount) =>
     maximumFractionDigits: 0,
   }).format(amount || 0);
 
-const hasAvailableStock = (value) => {
-  const stock = Number(value);
+const hasAvailableStock = (variant) => {
+  if (variant?.isAvailable === false) return false;
+  if (variant?.isAvailable === true) return true;
+  const stock = Number(variant?.stock);
   if (!Number.isFinite(stock)) return true;
   return stock > 0;
 };
 
 export default function ProductPage() {
-  const { slug } = useParams();
+  const { slug, gender, watchGender } = useParams();
+  const catalogGender = watchGender || gender;
   const navigate = useNavigate();
   const { addToCart, wishlist, toggleWishlist } = useStore();
   const [product, setProduct] = useState(null);
@@ -40,13 +45,19 @@ export default function ProductPage() {
       setSelectedVariant("");
 
       try {
-        const { data } = await getProductBySlug(slug);
+        const { data } = watchGender
+          ? await getWatchBySlug(watchGender, slug)
+          : gender
+            ? await getShoeBySlug(gender, slug)
+            : await getProductBySlug(slug);
         if (!data?.success || !data.product) {
           throw new Error(data?.message || "Product not found");
         }
         if (active) setProduct(data.product);
       } catch (requestError) {
-        const demoProduct = demoProducts.find((item) => item.slug === slug);
+        const demoProduct = catalogGender
+          ? null
+          : demoProducts.find((item) => item.slug === slug);
         if (active && demoProduct) {
           setProduct(demoProduct);
         } else if (active) {
@@ -65,14 +76,14 @@ export default function ProductPage() {
     return () => {
       active = false;
     };
-  }, [slug]);
+  }, [gender, watchGender, catalogGender, slug]);
 
   useEffect(() => {
     const images = product?.images?.filter(Boolean) || [];
     setActiveImage(images[0] || "");
 
     const availableVariant = product?.variants?.find(
-      (variant) => hasAvailableStock(variant?.stock)
+      (variant) => hasAvailableStock(variant)
     );
     setSelectedVariant(availableVariant ? variantKey(availableVariant) : "");
   }, [product]);
@@ -108,7 +119,7 @@ export default function ProductPage() {
   const selected = variants.find(
     (variant) => variantKey(variant) === selectedVariant
   );
-  const availableVariants = variants.filter((variant) => hasAvailableStock(variant?.stock));
+  const availableVariants = variants.filter((variant) => hasAvailableStock(variant));
   const images = product.images?.filter(Boolean) || [];
   const discount = product.compareAtPrice > product.price
     ? Math.round(
@@ -120,6 +131,19 @@ export default function ProductPage() {
     typeof product.brand === "string"
       ? product.brand
       : product.category?.name || "HIMAANIX";
+  const categoryName =
+    typeof product.category === "string"
+      ? product.category
+      : product.category?.name;
+  const specifications = Object.entries(product.specifications || {}).filter(
+    ([name, value]) =>
+      !/^(gender|productType|sourceProductId|publishedAt|updatedAt|createdAt)$/i.test(
+        name
+      ) &&
+      (typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean")
+  );
 
   const updateZoomPosition = (event) => {
     const bounds = event.currentTarget.getBoundingClientRect();
@@ -148,10 +172,16 @@ export default function ProductPage() {
         <Link to="/" className="hover:text-slate-900">Home</Link>
         <span aria-hidden="true">/</span>
         <Link
-          to={`/shop${product.category?.name ? `?category=${encodeURIComponent(product.category.name)}` : ""}`}
+          to={
+            watchGender
+              ? `/watches/${watchGender}`
+              : gender
+                ? `/shoes/${gender}`
+              : `/shop${categoryName ? `?category=${encodeURIComponent(categoryName)}` : ""}`
+          }
           className="hover:text-slate-900"
         >
-          {product.category?.name || "Shop"}
+          {categoryName || "Shop"}
         </Link>
         <span aria-hidden="true">/</span>
         <span className="max-w-xs truncate text-slate-700">{product.name}</span>
@@ -189,6 +219,7 @@ export default function ProductPage() {
               ))}
             </div>
           )}
+
           <div
             className={`product-view-hero${zoomPosition ? " is-zoomed" : ""}`}
             role="button"
@@ -319,6 +350,29 @@ export default function ProductPage() {
             </div>
           )}
 
+          {specifications.length > 0 && (
+            <div className="mt-6">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-900">
+                Specifications
+              </h2>
+              <dl className="mt-3 divide-y divide-gray-100 border-y border-gray-100">
+                {specifications.map(([name, value]) => (
+                  <div
+                    key={name}
+                    className="grid grid-cols-2 gap-4 py-2 text-sm"
+                  >
+                    <dt className="capitalize text-gray-500">
+                      {name.replace(/([A-Z])/g, " $1")}
+                    </dt>
+                    <dd className="text-right text-slate-800">
+                      {String(value)}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          )}
+
           {hasVariants ? (
             <div className="mt-7">
               <div className="mb-3 flex items-center justify-between gap-3">
@@ -345,7 +399,11 @@ export default function ProductPage() {
                       value={variantKey(variant)}
                     >
                       {[variant.size, variant.color].filter(Boolean).join(" · ")}
-                      {` · ${variant.stock} available`}
+                      {variant.stock != null
+                        ? ` · ${variant.stock} available`
+                        : variant.isAvailable
+                          ? " · Available"
+                          : " · Out of stock"}
                     </option>
                   ))}
                 </select>

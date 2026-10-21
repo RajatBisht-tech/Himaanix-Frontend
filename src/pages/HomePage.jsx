@@ -16,7 +16,7 @@ import { getProducts } from "../api/productApi.js";
 const benefits = [
     {
         title: "Free shipping",
-        description: "On orders above ₹500",
+        description: "On orders above ₹1,999",
         Icon: Truck,
     },
     {
@@ -45,29 +45,30 @@ function SectionHeading({
     linkText,
 }) {
     return (
-        <div className="mb-8 flex flex-col items-center text-center">
-            <span className="mb-3 block text-xs font-bold uppercase tracking-[0.22em] text-pink-600">
-                {eyebrow}
-            </span>
+        <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div>
+                <span className="mb-3 block text-xs font-bold uppercase tracking-[0.22em] text-pink-600">
+                    {eyebrow}
+                </span>
 
-            <h2 className="font-serif text-3xl leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
-                {title} <em className="font-normal">{emphasis}</em>
-            </h2>
+                <h2 className="font-serif text-3xl leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
+                    {title} <em className="font-normal">{emphasis}</em>
+                </h2>
 
-            {description && (
-                <p className="mt-3 max-w-xl text-sm leading-6 text-gray-500 sm:text-base">
-                    {description}
-                </p>
-            )}
+                {description && (
+                    <p className="mt-3 text-sm leading-6 text-gray-500 sm:text-base">
+                        {description}
+                    </p>
+                )}
+            </div>
 
-            {link && linkText && (
-                <Link
-                    to={link}
-                    className="mt-4 inline-block border-b border-slate-900 pb-1 text-sm text-slate-900 transition-opacity hover:opacity-60"
-                >
-                    {linkText}
-                </Link>
-            )}
+            {/* Fix #1 Merge B: unified with blog "Read more" underline style */}
+            <Link
+                to={link}
+                className="inline-block border-b border-slate-900 pb-1 text-sm text-slate-900 transition-opacity hover:opacity-60"
+            >
+                {linkText}
+            </Link>
         </div>
     );
 }
@@ -93,31 +94,22 @@ export default function HomePage() {
             setError("");
 
             try {
-                const { data } = await getProducts({
-                    limit: 4,
-                    ...params,
-                });
-
+                const { data } = await getProducts({ limit: 4, ...params });
                 if (!data?.success || !Array.isArray(data.products)) {
                     throw new Error("Invalid products response");
                 }
-
-                if (active) {
-                    setProducts(data.products);
-                }
+                if (active) setProducts(data.products);
             } catch (error) {
                 if (active) {
                     setProducts([]);
                     setError(
                         error.response?.data?.message ||
-                        error.message ||
-                        "Unable to load products."
+                            error.message ||
+                            "Unable to load products."
                     );
                 }
             } finally {
-                if (active) {
-                    setLoading(false);
-                }
+                if (active) setLoading(false);
             }
         };
 
@@ -127,7 +119,6 @@ export default function HomePage() {
             setBestDealsLoading,
             setBestDealsError
         );
-
         void loadSection(
             { sort: "newest", category: "Women" },
             setNewArrivals,
@@ -146,23 +137,32 @@ export default function HomePage() {
             <BannerSlider />
 
             {/* Shopping Benefits */}
-            <section className="border-y border-gray-100 bg-white px-5 py-6 sm:px-8 lg:py-8">
-                <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6">
-                    {benefits.map(({ title, description, Icon }) => (
+            <section className="border-y border-gray-100 bg-white px-5 py-5 sm:px-8 lg:py-6">
+                <div className="mx-auto grid max-w-[1400px] grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                    {benefits.map(({ title, description, Icon }, index) => (
                         <div
                             key={title}
-                            className="group flex cursor-pointer items-center gap-4 rounded-2xl border border-gray-100 bg-white px-5 py-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-pink-200 hover:bg-gray-50 hover:shadow-md"
+                            className={`flex items-center gap-4 px-4 py-4 sm:px-6 lg:justify-center ${index !== 0
+                                    ? "border-t border-gray-100 sm:border-t-0"
+                                    : ""
+                                } ${index % 2 !== 0
+                                    ? "sm:border-l sm:border-gray-100"
+                                    : ""
+                                } ${index !== 0
+                                    ? "lg:border-l lg:border-gray-100"
+                                    : ""
+                                }`}
                         >
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gray-50 transition-all duration-300 group-hover:scale-110 group-hover:bg-slate-900 group-hover:shadow-md">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gray-50">
                                 <Icon
-                                    size={22}
+                                    size={21}
                                     strokeWidth={1.5}
-                                    className="text-slate-800 transition-colors duration-300 group-hover:text-white"
+                                    className="text-slate-800"
                                 />
                             </div>
 
-                            <div className="min-w-0">
-                                <h3 className="text-sm font-semibold text-slate-900 transition-colors duration-300 group-hover:text-pink-600">
+                            <div>
+                                <h3 className="text-sm font-semibold text-slate-900">
                                     {title}
                                 </h3>
 
@@ -176,10 +176,10 @@ export default function HomePage() {
             </section>
 
             {/* Himaanix Family Fashion Hero */}
-            <section className="mx-0 w-full overflow-hidden bg-[#f2eee8]">
+            <section className="mx-2 overflow-hidden bg-[#f2eee8] sm:mx-5 lg:mx-8">
                 <div className="grid grid-cols-1 md:grid-cols-2">
                     {/* Left: Family Image */}
-                    <div className="relative min-h-[380px] overflow-hidden sm:min-h-[500px] md:min-h-[600px] lg:min-h-[680px] xl:min-h-[740px]">
+                    <div className="relative min-h-[300px] overflow-hidden sm:min-h-[420px] lg:min-h-[540px]">
                         <img
                             src="/Family.png"
                             alt="Himaanix fashion collection for women, men and kids"
@@ -189,16 +189,18 @@ export default function HomePage() {
                     </div>
 
                     {/* Right: Hero Text */}
-                    <div className="flex min-h-[380px] items-center bg-[#f2eee8] px-7 py-12 sm:min-h-[500px] sm:px-12 md:min-h-[600px] lg:min-h-[680px] lg:px-14 xl:min-h-[740px] xl:px-16">
+                    <div className="flex items-center bg-[#f2eee8] px-7 py-12 sm:px-12 lg:px-14 xl:px-16">
                         <div className="max-w-xl">
                             <span className="text-xs font-bold tracking-[0.23em] text-pink-600">
                                 The Himaanix Edit
                             </span>
 
-                            <h1 className="mt-5 font-serif text-4xl leading-[1.08] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl xl:text-7xl">
+                            <h1 className="mt-5 font-serif text-4xl leading-[1.08] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl xl:text-6xl">
                                 Find your style.
                                 <br />
-                                <em className="font-normal">Own your story.</em>
+                                <em className="font-normal">
+                                    Own your story.
+                                </em>
                             </h1>
 
                             <p className="mt-5 max-w-md text-sm leading-7 text-gray-600 sm:text-base">
@@ -219,10 +221,15 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* Best Deals */}
-            <section className="w-full bg-white px-3 py-8 sm:px-4 lg:px-6 lg:py-10">
-                <div className="mx-auto w-full max-w-none">
-                    <div className="mb-8 flex flex-col items-center text-center">
+            {/* Category Navigation */}
+            <CategoryScroller />
+
+            {/* Price Drop & Best Deals */}
+            <section className="bg-white px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+                <div className="mx-auto max-w-[1800px]">
+                    {/* Section Heading */}
+                    <div className="mb-9 flex flex-col items-center text-center">
+                        {/* Fix #2: removed uppercase — source is already title-cased */}
                         <span className="mb-3 text-xs font-semibold tracking-[0.3em] text-pink-600">
                             The Himaanix Edit
                         </span>
@@ -234,6 +241,7 @@ export default function HomePage() {
                         <div className="mt-4 h-px w-24 bg-pink-500" />
                     </div>
 
+                    {/* Product Grid */}
                     {bestDealsError ? (
                         <p
                             role="alert"
@@ -249,6 +257,7 @@ export default function HomePage() {
                         />
                     )}
 
+                    {/* View All */}
                     <div className="mt-8 flex justify-center">
                         <Link
                             to="/shop"
@@ -261,8 +270,9 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* New Arrivals (Centered Header) */}
-            <section className="mx-auto w-full max-w-none px-3 py-8 sm:px-4 sm:py-10 lg:px-6 lg:py-12">
+            {/* New Arrivals */}
+            <section className="mx-auto max-w-[1600px] px-5 py-14 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+                {/* Fix #3: linkText changed to sentence case */}
                 <SectionHeading
                     eyebrow="Fresh finds"
                     title="Just landed."
@@ -289,13 +299,13 @@ export default function HomePage() {
             </section>
 
             {/* Blog Posts */}
-            <section className="w-full bg-white px-3 py-8 sm:px-4 sm:py-10 lg:px-6 lg:py-12">
-                <div className="mx-auto w-full max-w-none">
-                    <h2 className="mb-8 text-center text-2xl font-normal tracking-[0.18em] text-slate-900 sm:mb-10 sm:text-3xl">
+            <section className="bg-white px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+                <div className="mx-auto max-w-[1420px]">
+                    <h2 className="mb-12 text-center text-2xl font-normal tracking-[0.18em] text-slate-900 sm:mb-14 sm:text-3xl">
                         BLOG POSTS
                     </h2>
 
-                    <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-10">
+                    <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3 lg:gap-12">
                         {/* Blog 1: Women's Fashion */}
                         <article className="group">
                             <Link
@@ -310,12 +320,12 @@ export default function HomePage() {
                                 />
                             </Link>
 
-                            <h3 className="mt-5 text-lg font-normal leading-8 tracking-[0.02em] text-slate-900 sm:text-xl">
+                            <h3 className="mt-6 text-lg font-normal leading-8 tracking-[0.02em] text-slate-900 sm:text-xl">
                                 Comfortable Everyday Kurtis for Women: What to
                                 Wear to Work and Beyond
                             </h3>
 
-                            <p className="mt-4 text-sm leading-7 text-gray-600">
+                            <p className="mt-5 text-sm leading-7 text-gray-600">
                                 Finding the right kurti for everyday wear is
                                 about balancing comfort, style and versatility.
                                 Discover breathable fabrics, flattering prints
@@ -326,7 +336,7 @@ export default function HomePage() {
 
                             <Link
                                 to="/blog/everyday-kurtis-for-women"
-                                className="mt-4 inline-block border-b border-slate-900 pb-1 text-sm text-slate-900 transition-opacity hover:opacity-60"
+                                className="mt-5 inline-block border-b border-slate-900 pb-1 text-sm text-slate-900 transition-opacity hover:opacity-60"
                             >
                                 Read more
                             </Link>
@@ -346,11 +356,11 @@ export default function HomePage() {
                                 />
                             </Link>
 
-                            <h3 className="mt-5 text-lg font-normal leading-8 tracking-[0.02em] text-slate-900 sm:text-xl">
+                            <h3 className="mt-6 text-lg font-normal leading-8 tracking-[0.02em] text-slate-900 sm:text-xl">
                                 Stylish Comfort for Little Explorers
                             </h3>
 
-                            <p className="mt-4 text-sm leading-7 text-gray-600">
+                            <p className="mt-5 text-sm leading-7 text-gray-600">
                                 Discover stylish outfits for little explorers,
                                 from playful everyday looks to charming festive
                                 ensembles. Explore comfortable fabrics,
@@ -361,7 +371,7 @@ export default function HomePage() {
 
                             <Link
                                 to="/blog/kids-fashion"
-                                className="mt-4 inline-block border-b border-slate-900 pb-1 text-sm text-slate-900 transition-opacity hover:opacity-60"
+                                className="mt-5 inline-block border-b border-slate-900 pb-1 text-sm text-slate-900 transition-opacity hover:opacity-60"
                             >
                                 Read more
                             </Link>
@@ -381,11 +391,11 @@ export default function HomePage() {
                                 />
                             </Link>
 
-                            <h3 className="mt-5 text-lg font-normal leading-8 tracking-[0.02em] text-slate-900 sm:text-xl">
+                            <h3 className="mt-6 text-lg font-normal leading-8 tracking-[0.02em] text-slate-900 sm:text-xl">
                                 Modern Styles for Every Man
                             </h3>
 
-                            <p className="mt-4 text-sm leading-7 text-gray-600">
+                            <p className="mt-5 text-sm leading-7 text-gray-600">
                                 From office-ready outfits to festive
                                 celebrations and weekend outings, discover
                                 versatile menswear designed for modern living.
@@ -396,7 +406,7 @@ export default function HomePage() {
 
                             <Link
                                 to="/blog/mens-fashion"
-                                className="mt-4 inline-block border-b border-slate-900 pb-1 text-sm text-slate-900 transition-opacity hover:opacity-60"
+                                className="mt-5 inline-block border-b border-slate-900 pb-1 text-sm text-slate-900 transition-opacity hover:opacity-60"
                             >
                                 Read more
                             </Link>

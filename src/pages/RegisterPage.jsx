@@ -46,26 +46,17 @@ export default function RegisterPage() {
         setError("");
         setSuccess("");
 
-        const name = form.name.trim();
-        const email = form.email.trim().toLowerCase();
-        const { password, confirmPassword } = form;
-
-        if (name.length < 2) {
+        if (form.name.trim().length < 2) {
             setError("Please enter your full name.");
             return;
         }
 
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            setError("Please enter a valid email address.");
-            return;
-        }
-
-        if (password.length < 8) {
+        if (form.password.length < 8) {
             setError("Password must be at least 8 characters.");
             return;
         }
 
-        if (password !== confirmPassword) {
+        if (form.password !== form.confirmPassword) {
             setError("Passwords do not match.");
             return;
         }
@@ -74,9 +65,9 @@ export default function RegisterPage() {
             setLoading(true);
 
             const { data } = await api.post("/auth/register", {
-                name,
-                email,
-                password,
+                name: form.name.trim(),
+                email: form.email.trim().toLowerCase(),
+                password: form.password,
             });
 
             if (!data?.success || !data?.token) {
@@ -89,6 +80,7 @@ export default function RegisterPage() {
 
             signIn(data.token, data.user, true);
             setSuccess("Your account has been created successfully.");
+
             navigate("/account", { replace: true });
         } catch (err) {
             setError(
@@ -102,38 +94,42 @@ export default function RegisterPage() {
     };
 
     return (
+        /* 1. Changed to flex-center to hold the card perfectly in the middle of the screen */
         <main className="flex min-h-screen items-center justify-center bg-gray-50 p-4 sm:p-6 lg:p-8">
-            <div className="flex min-h-[640px] w-full max-w-[1400px] flex-col overflow-hidden border border-gray-200 bg-white shadow-sm md:h-[calc(100vh-4rem)] md:max-h-[880px] md:flex-row">
-                {/* LEFT — image + welcome card (register copy) */}
+
+            {/* 2. Responsive Box Height (matches login page) */}
+            <div className="flex w-full max-w-[1600px] min-h-[600px] flex-col overflow-hidden border border-gray-200 bg-white shadow-sm md:h-[calc(100vh-4rem)] md:max-h-[900px] md:flex-row">
+
+                {/* LEFT: Fashion image and welcome section */}
                 <section className="relative hidden flex-col bg-[#f4eee5] md:flex md:w-1/2">
                     <img
                         src="/Family.png"
-                        alt="Himaanix family fashion collection"
+                        alt="HIMAANIX family fashion collection"
                         loading="eager"
                         className="absolute inset-0 h-full w-full object-cover object-center"
                     />
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
-
+                    {/* Welcome text */}
                     <div className="relative z-10 mt-auto px-8 pb-12 pt-10 lg:px-12 lg:pb-16">
-                        <div className="max-w-md bg-[#f7f1ea]/95 p-6 shadow-sm backdrop-blur-sm lg:p-8">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-700">
-                                Himaanix
-                            </p>
+                        <div className="max-w-md bg-[#f4eee5]/95 p-6 shadow-sm backdrop-blur-sm lg:p-8">
+                            <h1 className="text-[10px] font-medium uppercase tracking-[0.3em] text-slate-700">
+                                HIMAANIX
+                            </h1>
+
                             <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.3em] text-slate-500">
-                                Join the edit
+                                Welcome back
                             </p>
 
                             <h1 className="mt-5 font-serif text-4xl leading-[1.08] tracking-tight text-slate-900 lg:text-5xl">
-                                Find your style.
+                                Good style.
                                 <br />
-                                <em className="font-normal">Own your story.</em>
+                                <em className="font-normal">Good to see you.</em>
                             </h1>
 
                             <p className="mt-5 max-w-sm text-sm leading-6 text-slate-700">
-                                Create your account and discover standout pieces
+                                Your favourites, your wardrobe, your style.
                                 <br />
-                                and everyday favourites made for you.
+                                Pick up right where you left off.
                             </p>
 
                             <div className="mt-8 h-px w-14 bg-slate-600" />
@@ -141,17 +137,21 @@ export default function RegisterPage() {
                     </div>
                 </section>
 
-                {/* RIGHT — registration form */}
+                {/* RIGHT: Registration form */}
+                {/* 3. Added overflow-y-auto so the form scrolls on shorter screens without breaking layout */}
                 <section className="flex w-full items-center justify-center overflow-y-auto bg-white px-6 py-10 sm:px-10 md:w-1/2 lg:px-16">
                     <div className="my-auto w-full max-w-md">
-                        {/* Mobile brand */}
-                        <div className="mb-8 md:hidden">
-                            <p className="text-center text-[10px] font-semibold uppercase tracking-[0.3em] text-pink-600">
-                                Himaanix
-                            </p>
-                        </div>
 
-                        <div className="mb-7">
+                        {/* Mobile logo */}
+                        <Link
+                            to="/"
+                            className="mb-8 block text-center font-serif text-2xl tracking-[0.25em] text-slate-900 md:hidden"
+                        >
+                            HIMAANIX
+                        </Link>
+
+                        {/* Form heading */}
+                        <div className="mb-7 mt-4 md:mt-0">
                             <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-slate-500">
                                 Your account
                             </p>
@@ -166,6 +166,7 @@ export default function RegisterPage() {
                             </p>
                         </div>
 
+                        {/* Error */}
                         {error && (
                             <div
                                 role="alert"
@@ -175,6 +176,7 @@ export default function RegisterPage() {
                             </div>
                         )}
 
+                        {/* Success */}
                         {success && (
                             <div
                                 role="status"
@@ -185,7 +187,8 @@ export default function RegisterPage() {
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                        <form onSubmit={handleSubmit} className="space-y-5">
+
                             {/* Full name */}
                             <div>
                                 <label
@@ -197,7 +200,7 @@ export default function RegisterPage() {
                                 <div className="relative">
                                     <UserRound
                                         size={17}
-                                        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                     />
                                     <input
                                         id="name"
@@ -226,14 +229,13 @@ export default function RegisterPage() {
                                 <div className="relative">
                                     <Mail
                                         size={17}
-                                        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                     />
                                     <input
                                         id="email"
                                         name="email"
                                         type="email"
                                         autoComplete="email"
-                                        inputMode="email"
                                         placeholder="you@example.com"
                                         value={form.email}
                                         onChange={handleChange}
@@ -254,7 +256,7 @@ export default function RegisterPage() {
                                 <div className="relative">
                                     <LockKeyhole
                                         size={17}
-                                        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                     />
                                     <input
                                         id="password"
@@ -278,7 +280,7 @@ export default function RegisterPage() {
                                                 ? "Hide password"
                                                 : "Show password"
                                         }
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-slate-900"
+                                        className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-500 hover:text-slate-900"
                                     >
                                         {showPassword ? (
                                             <EyeOff size={17} />
@@ -300,14 +302,12 @@ export default function RegisterPage() {
                                 <div className="relative">
                                     <LockKeyhole
                                         size={17}
-                                        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                     />
                                     <input
                                         id="confirmPassword"
                                         name="confirmPassword"
-                                        type={
-                                            showConfirmPassword ? "text" : "password"
-                                        }
+                                        type={showConfirmPassword ? "text" : "password"}
                                         autoComplete="new-password"
                                         placeholder="Re-enter your password"
                                         value={form.confirmPassword}
@@ -318,16 +318,14 @@ export default function RegisterPage() {
                                     <button
                                         type="button"
                                         onClick={() =>
-                                            setShowConfirmPassword(
-                                                (previous) => !previous
-                                            )
+                                            setShowConfirmPassword((previous) => !previous)
                                         }
                                         aria-label={
                                             showConfirmPassword
                                                 ? "Hide confirm password"
                                                 : "Show confirm password"
                                         }
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-slate-900"
+                                        className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-500 hover:text-slate-900"
                                     >
                                         {showConfirmPassword ? (
                                             <EyeOff size={17} />
@@ -342,26 +340,25 @@ export default function RegisterPage() {
                             <p className="text-xs leading-5 text-gray-500">
                                 By creating an account, you agree to our{" "}
                                 <Link
-                                    to="/Terms"
+                                    to="/terms"
                                     className="underline underline-offset-4 hover:text-slate-900"
                                 >
                                     Terms &amp; Conditions
                                 </Link>{" "}
                                 and{" "}
                                 <Link
-                                    to="/privacy-policy"
+                                    to="/privacy"
                                     className="underline underline-offset-4 hover:text-slate-900"
                                 >
                                     Privacy Policy
-                                </Link>
-                                .
+                                </Link>.
                             </p>
 
                             {/* Submit */}
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="flex h-12 w-full items-center justify-center gap-3 bg-slate-900 px-5 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="flex h-12 w-full items-center justify-center gap-3 bg-slate-900 px-5 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 {loading ? "Creating account..." : "Create account"}
                                 {!loading && <ArrowRight size={16} />}

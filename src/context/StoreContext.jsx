@@ -20,15 +20,19 @@ export function StoreProvider({ children }) {
   const clearCart = () => saveCart([]);
 
   const addToCart = (product) => {
-    const exists = cart.find((item) => item.key === product._id);
+    const cartKey =
+      product.selectedSize || product.selectedColor
+        ? `${product._id}:${product.selectedSize || ""}:${product.selectedColor || ""}`
+        : product._id;
+    const exists = cart.find((item) => item.key === cartKey);
 
     const updatedCart = exists
       ? cart.map((item) =>
-        item.key === product._id
+        item.key === cartKey
           ? { ...item, quantity: item.quantity + 1 }
           : item
       )
-      : [...cart, { key: product._id, product, quantity: 1 }];
+      : [...cart, { key: cartKey, product, quantity: 1 }];
 
     saveCart(updatedCart);
   };

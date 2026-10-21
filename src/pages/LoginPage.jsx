@@ -27,7 +27,6 @@ export default function LoginPage() {
 
     const handleChange = (event) => {
         const { name, value } = event.target;
-        setError("");
         setForm((previous) => ({
             ...previous,
             [name]: value,
@@ -38,26 +37,16 @@ export default function LoginPage() {
         event.preventDefault();
         setError("");
 
-        const email = form.email.trim().toLowerCase();
-        const password = form.password;
-
-        if (!email || !password) {
+        if (!form.email.trim() || !form.password) {
             setError("Please enter your email and password.");
-            return;
-        }
-
-        // Basic email shape check (browser also validates type="email")
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            setError("Please enter a valid email address.");
             return;
         }
 
         try {
             setLoading(true);
-
             const { data } = await api.post("/auth/login", {
-                email,
-                password,
+                email: form.email.trim().toLowerCase(),
+                password: form.password,
             });
 
             if (!data?.success || !data?.token) {
@@ -66,7 +55,7 @@ export default function LoginPage() {
             }
 
             if (!data.user) {
-                setError("Signed in, but account details were not returned.");
+                setError("Signed in, but the account details were not returned.");
                 return;
             }
 
@@ -83,25 +72,33 @@ export default function LoginPage() {
     };
 
     return (
-        <main className="flex min-h-screen items-center justify-center bg-gray-50 p-4 sm:p-6 lg:p-8">
-            <div className="flex min-h-[640px] w-full max-w-[1400px] flex-col overflow-hidden border border-gray-200 bg-white shadow-sm md:h-[calc(100vh-4rem)] md:max-h-[880px] md:flex-row">
-                {/* LEFT — image + welcome card */}
+        /* Changed to flex-center to hold the card perfectly in the middle of the screen */
+        <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+
+            {/* 
+              The Main Wrapper:
+              - md:h-[calc(100vh-4rem)]: Forces it to fit the screen minus the padding on desktop
+              - md:max-h-[900px]: Stops it from looking stretched on giant monitors
+              - flex flex-col md:flex-row: Creates the split screen
+            */}
+            <div className="w-full max-w-[1600px] min-h-[600px] md:h-[calc(100vh-4rem)] md:max-h-[900px] flex flex-col md:flex-row overflow-hidden border border-gray-200 bg-white shadow-sm">
+
+                {/* LEFT: Fashion image and welcome content */}
                 <section className="relative hidden md:flex md:w-1/2 flex-col bg-[#f4eee5]">
                     <img
                         src="/Family.png"
-                        alt="Himaanix family fashion collection"
+                        alt="HIMAANIX family fashion collection"
                         loading="eager"
                         className="absolute inset-0 h-full w-full object-cover object-center"
                     />
 
-                    {/* soft gradient so text card stays readable */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
-
+                    {/* Welcome text */}
                     <div className="relative z-10 mt-auto px-8 pb-12 pt-10 lg:px-12 lg:pb-16">
-                        <div className="max-w-md bg-[#f7f1ea]/95 p-6 shadow-sm backdrop-blur-sm lg:p-8">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-700">
-                                Himaanix
-                            </p>
+                        <div className="max-w-md bg-[#f4eee5]/95 p-6 lg:p-8 backdrop-blur-sm shadow-sm">
+                            <h1 className="text-[10px] font-medium uppercase tracking-[0.3em] text-slate-700">
+                                HIMAANIX
+                            </h1>
+
                             <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.3em] text-slate-500">
                                 Welcome back
                             </p>
@@ -123,16 +120,10 @@ export default function LoginPage() {
                     </div>
                 </section>
 
-                {/* RIGHT — form */}
-                <section className="flex w-full items-center justify-center overflow-y-auto bg-white px-6 py-12 sm:px-10 md:w-1/2 lg:px-16">
-                    <div className="my-auto w-full max-w-md">
-                        {/* Mobile-only brand line */}
-                        <div className="mb-8 md:hidden">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-pink-600">
-                                Himaanix
-                            </p>
-                        </div>
-
+                {/* RIGHT: Login form */}
+                {/* Added overflow-y-auto so if the user is on a tiny laptop, the form scrolls, not the whole page */}
+                <section className="flex w-full md:w-1/2 items-center justify-center bg-white px-6 py-12 sm:px-10 lg:px-16 overflow-y-auto">
+                    <div className="w-full max-w-md my-auto">
                         <div className="mb-9">
                             <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-slate-500">
                                 Your account
@@ -145,7 +136,7 @@ export default function LoginPage() {
                             </p>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+                        <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Email */}
                             <div>
                                 <label
@@ -157,14 +148,13 @@ export default function LoginPage() {
                                 <div className="relative">
                                     <Mail
                                         size={17}
-                                        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                     />
                                     <input
                                         id="email"
                                         name="email"
                                         type="email"
                                         autoComplete="email"
-                                        inputMode="email"
                                         placeholder="you@example.com"
                                         value={form.email}
                                         onChange={handleChange}
@@ -193,7 +183,7 @@ export default function LoginPage() {
                                 <div className="relative">
                                     <LockKeyhole
                                         size={17}
-                                        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                     />
                                     <input
                                         id="password"
@@ -216,7 +206,7 @@ export default function LoginPage() {
                                                 ? "Hide password"
                                                 : "Show password"
                                         }
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-slate-900"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-slate-900"
                                     >
                                         {showPassword ? (
                                             <EyeOff size={17} />
@@ -228,7 +218,7 @@ export default function LoginPage() {
                             </div>
 
                             {/* Remember me */}
-                            <label className="flex cursor-pointer items-center gap-2.5 text-xs text-gray-600">
+                            <label className="flex cursor-pointer items-center gap-2 text-xs text-gray-600">
                                 <input
                                     type="checkbox"
                                     checked={rememberMe}
@@ -240,7 +230,7 @@ export default function LoginPage() {
                                 Keep me signed in on this device
                             </label>
 
-                            {/* Error */}
+                            {/* Error message */}
                             {error && (
                                 <div
                                     role="alert"
@@ -250,18 +240,18 @@ export default function LoginPage() {
                                 </div>
                             )}
 
-                            {/* Submit */}
+                            {/* Sign in */}
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="flex h-12 w-full items-center justify-center gap-3 bg-slate-900 px-6 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="flex h-12 w-full items-center justify-center gap-3 bg-slate-900 px-6 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 {loading ? "Signing in..." : "Sign in"}
                                 {!loading && <ArrowRight size={16} />}
                             </button>
                         </form>
 
-                        {/* Divider */}
+                        {/* Create account divider */}
                         <div className="my-8 flex items-center gap-4">
                             <div className="h-px flex-1 bg-gray-200" />
                             <span className="text-[9px] uppercase tracking-wider text-gray-400">
@@ -279,23 +269,22 @@ export default function LoginPage() {
                             <ArrowRight size={16} />
                         </Link>
 
-                        {/* Legal */}
+                        {/* Legal text */}
                         <p className="mt-8 text-center text-[11px] leading-6 text-gray-500">
                             By signing in, you agree to our{" "}
                             <Link
-                                to="/Terms"
+                                to="/terms"
                                 className="underline underline-offset-2 hover:text-slate-900"
                             >
                                 Terms &amp; Conditions
                             </Link>{" "}
                             and{" "}
                             <Link
-                                to="/privacy-policy"
+                                to="/privacy"
                                 className="underline underline-offset-2 hover:text-slate-900"
                             >
                                 Privacy Policy
-                            </Link>
-                            .
+                            </Link>.
                         </p>
                     </div>
                 </section>

@@ -8,6 +8,10 @@ import Footer from "./components/Footer.jsx";
 
 import HomePage from "./pages/HomePage.jsx";
 import ShopPage from "./pages/ShopPage.jsx";
+import MenShoesPage from "./pages/MenShoesPage.jsx";
+import WomenShoesPage from "./pages/WomenShoesPage.jsx";
+import MenWatchesPage from "./pages/MenWatchesPage.jsx";
+import WomenWatchesPage from "./pages/WomenWatchesPage.jsx";
 import ProductPage from "./pages/ProductPage.jsx";
 import CartPage from "./pages/CartPage.jsx";
 import WishlistPage from "./pages/WishlistPage.jsx";
@@ -48,6 +52,12 @@ export default function App() {
                 <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/shop" element={<ShopPage />} />
+                    <Route path="/shoes/men" element={<MenShoesPage />} />
+                    <Route path="/shoes/women" element={<WomenShoesPage />} />
+                    <Route path="/shoes/:gender/:slug" element={<ProductPage />} />
+                    <Route path="/watches/men" element={<MenWatchesPage />} />
+                    <Route path="/watches/women" element={<WomenWatchesPage />} />
+                    <Route path="/watches/:watchGender/:slug" element={<ProductPage />} />
                     <Route path="/product/:slug" element={<ProductPage />} />
                     <Route path="/cart" element={<CartPage />} />
                     <Route path="/wishlist" element={<WishlistPage />} />

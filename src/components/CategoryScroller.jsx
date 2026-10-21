@@ -4,14 +4,9 @@ import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const categories = [
+
     {
-        name: "Westernwear",
-        image:
-            "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=350&q=85",
-        color: "#9bcaff",
-    },
-    {
-        name: "Indianwear",
+        name: "Women",
         image:
             "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=350&q=85",
         color: "#8ce8c6",
@@ -29,33 +24,9 @@ const categories = [
         color: "#ffc58b",
     },
     {
-        name: "Home",
-        image:
-            "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=350&q=85",
-        color: "#8ce8c6",
-    },
-    {
         name: "Footwear",
         image:
             "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=350&q=85",
-        color: "#9bcaff",
-    },
-    {
-        name: "Lingerie",
-        image:
-            "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=350&q=85",
-        color: "#8ce8c6",
-    },
-    {
-        name: "Bags",
-        image:
-            "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=350&q=85",
-        color: "#8ce8c6",
-    },
-    {
-        name: "Sportswear",
-        image:
-            "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=350&q=85",
         color: "#9bcaff",
     },
     {
@@ -73,14 +44,8 @@ const categories = [
     {
         name: "Watches",
         image:
-            "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=350&q=85",
+            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&h=700&q=85",
         color: "#9bcaff",
-    },
-    {
-        name: "Sunglasses",
-        image:
-            "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=350&q=85",
-        color: "#8ce8c6",
     },
 ];
 
@@ -145,8 +110,15 @@ export default function CategoryScroller() {
         dragRef.current.moved = false;
     };
 
+    const getCategoryPath = (name) => {
+        if (name === "Men" || name === "Sneakers") return "/shoes/men";
+        if (name === "Women" || name === "Footwear") return "/shoes/women";
+        if (name === "Watches") return "/watches/women";
+        return `/shop?category=${encodeURIComponent(name)}`;
+    };
+
     return (
-        <section className="w-full border-b border-gray-100 bg-white py-5">
+        <section className="w-full border-b border-gray-100 bg-white py-5 sm:py-6">
             <div className="relative mx-auto w-full max-w-[1800px] px-10 sm:px-14">
                 {/* Left arrow */}
                 <button
@@ -185,12 +157,12 @@ export default function CategoryScroller() {
                     {categories.map((category) => (
                         <Link
                             key={category.name}
-                            to={`/shop?category=${encodeURIComponent(category.name)}`}
+                            to={getCategoryPath(category.name)}
                             draggable={false}
                             onDragStart={(event) => event.preventDefault()}
-                            className="group w-[135px] shrink-0 select-none sm:w-[148px]"
+                            className="group w-[150px] shrink-0 select-none sm:w-[175px] lg:w-[185px]"
                         >
-                            <div className="h-[125px] overflow-hidden rounded-xl bg-gray-100 sm:h-[145px]">
+                            <div className="relative h-[155px] overflow-hidden rounded-xl bg-gray-100 sm:h-[175px]">
                                 <img
                                     src={category.image}
                                     alt={category.name}
@@ -198,13 +170,12 @@ export default function CategoryScroller() {
                                     loading="lazy"
                                     className="pointer-events-none h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
                                 />
-                            </div>
-
-                            <div
-                                className="relative mx-1 -mt-6 rounded-lg px-1 py-2 text-center text-sm font-semibold text-slate-900 sm:text-base"
-                                style={{ backgroundColor: category.color }}
-                            >
-                                {category.name}
+                                <div
+                                    className="absolute inset-x-1 bottom-0 flex h-[46px] items-center justify-center rounded-xl px-1 text-base font-semibold text-slate-900 sm:text-lg"
+                                    style={{ backgroundColor: category.color }}
+                                >
+                                    {category.name}
+                                </div>
                             </div>
                         </Link>
                     ))}

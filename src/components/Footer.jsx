@@ -5,7 +5,6 @@ import {
     Facebook,
     Youtube,
     CheckCircle2,
-    ArrowRight,
 } from "lucide-react";
 
 const legalLinks = [
@@ -34,23 +33,20 @@ const shopLinks = [
 
 function FooterLinks({ title, links }) {
     return (
-        <div className="min-w-0">
-            <h3 className="mb-5 text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-500">
+        <div className="flex flex-col items-start gap-3">
+            <h3 className="mb-2 text-xs font-medium uppercase tracking-[0.28em] text-gray-500">
                 {title}
             </h3>
 
-            <ul className="space-y-3">
-                {links.map((item) => (
-                    <li key={item.label}>
-                        <Link
-                            to={item.href}
-                            className="text-sm text-slate-600 transition-colors hover:text-pink-600"
-                        >
-                            {item.label}
-                        </Link>
-                    </li>
-                ))}
-            </ul>
+            {links.map((item) => (
+                <Link
+                    key={item.label}
+                    to={item.href}
+                    className="text-sm text-gray-600 transition-opacity hover:opacity-60"
+                >
+                    {item.label}
+                </Link>
+            ))}
         </div>
     );
 }
@@ -64,32 +60,31 @@ export default function Footer() {
 
         if (!email.trim()) return;
 
-        // Connect this handler to your newsletter API to save subscriptions.
         setSubscribed(true);
         setEmail("");
     };
 
     return (
-        <footer className="w-full border-t border-gray-100 bg-white text-slate-900">
+        <footer className="w-full bg-white text-slate-900">
             {/* Newsletter */}
-            <section className="border-b border-gray-100 px-5 py-12 sm:px-8 sm:py-14 lg:px-12">
-                <div className="mx-auto w-full max-w-4xl text-center">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-pink-600">
-                        A little something for your inbox
+            <section className="border-t border-gray-100 bg-white px-5 py-8 text-center sm:py-10">
+                <div className="mx-auto max-w-3xl">
+                    <p className="text-xs font-medium uppercase tracking-[0.28em] text-gray-500">
+                        Keep me updated
                     </p>
 
-                    <h2 className="mt-3 font-serif text-3xl tracking-[0.12em] sm:text-4xl">
-                        THE HIMAANIX EDIT
+                    <h2 className="mt-3 text-3xl font-normal tracking-[0.14em] text-slate-900 sm:text-4xl">
+                        NEWSLETTER
                     </h2>
 
-                    <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-gray-500">
-                        Discover new collections, exclusive offers and inspiration
-                        for your everyday style.
+                    <p className="mt-3 text-sm leading-6 text-gray-600 sm:text-base">
+                        Get exclusive offers, latest collections, and style tips
+                        straight to your inbox.
                     </p>
 
                     <form
                         onSubmit={handleSubscribe}
-                        className="mx-auto mt-6 flex max-w-xl flex-col gap-3 sm:flex-row"
+                        className="mx-auto mt-5 flex w-full max-w-[630px] flex-col gap-3 sm:flex-row"
                     >
                         <input
                             type="email"
@@ -99,207 +94,218 @@ export default function Footer() {
                                 setEmail(event.target.value);
                                 setSubscribed(false);
                             }}
-                            placeholder="Enter your email address"
+                            placeholder="E-mail"
                             aria-label="Email address"
-                            className="h-12 min-w-0 flex-1 border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-slate-900"
+                            className="h-[50px] min-w-0 flex-1 border border-gray-300 bg-white px-4 text-sm text-slate-900 outline-none placeholder:text-gray-400 focus:border-slate-900"
                         />
 
+                        {/* Fix #1 Merge A: unified with dark CTA style */}
                         <button
                             type="submit"
-                            className="inline-flex h-12 items-center justify-center gap-2 bg-slate-900 px-8 text-[10px] font-bold uppercase tracking-[0.18em] text-white transition hover:bg-pink-600"
+                            className="flex h-[50px] items-center justify-center gap-2 bg-slate-900 px-8 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-pink-600 sm:min-w-[220px]"
                         >
                             {subscribed ? (
                                 <>
                                     <CheckCircle2 size={16} />
-                                    Subscribed
+                                    SUBSCRIBED
                                 </>
                             ) : (
-                                <>
-                                    Subscribe
-                                    <ArrowRight size={14} />
-                                </>
+                                "SUBSCRIBE"
                             )}
                         </button>
                     </form>
 
                     {subscribed && (
-                        <p role="status" className="mt-3 text-sm text-green-700">
+                        <p
+                            role="status"
+                            className="mt-3 text-sm text-gray-600"
+                        >
                             Thank you for subscribing to Himaanix.
                         </p>
                     )}
                 </div>
             </section>
 
-            {/* Footer columns — wider */}
-            <section className="mx-auto grid w-full max-w-[1600px] grid-cols-2 gap-x-8 gap-y-10 px-6 py-12 sm:px-10 md:grid-cols-3 lg:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] lg:gap-x-14 lg:px-12 lg:py-14 xl:px-16">
-                {/* Brand and company information */}
-                <div className="col-span-2 min-w-0 md:col-span-3 lg:col-span-1">
+            {/* Company information and navigation */}
+            <section className="mx-auto grid max-w-[1450px] grid-cols-1 gap-8 px-6 py-8 sm:px-10 md:grid-cols-2 lg:grid-cols-5 lg:gap-12 lg:px-12 lg:py-10">
+                {/* Company details */}
+                <div className="lg:col-span-2">
                     <Link
                         to="/"
-                        aria-label="Himaanix home"
-                        className="inline-flex items-center gap-3"
+                        className="inline-block font-serif text-2xl tracking-[0.28em] text-slate-900"
                     >
-                        <img
-                            src="/logo.png"
-                            alt="Himaanix logo"
-                            className="h-16 w-25 shrink-0 object-contain"
-                        />
-
-                        <span className="flex flex-col">
-                            <span className="font-serif text-xl tracking-[0.2em] text-slate-900">
-                                HIMAANIX
-                            </span>
-                            <span className="mt-1 text-[8px] uppercase tracking-[0.2em] text-gray-500">
-                                Fashion for every you
-                            </span>
-                        </span>
+                        HIMAANIX
                     </Link>
 
-                    <p className="mt-5 max-w-md text-sm leading-6 text-gray-600">
-                        Fashion that speaks before you do. Editorial pieces crafted
-                        for the modern wardrobe — considered, tactile and timeless.
+                    <p className="mt-4 max-w-md text-sm leading-6 text-gray-600">
+                        Fashion that speaks before you do. Editorial pieces
+                        crafted for the modern wardrobe — considered, tactile,
+                        timeless.
                     </p>
 
-                    <div className="mt-7 space-y-5 text-xs leading-5 text-gray-600">
-                        <div>
-                            <h4 className="mb-2 font-semibold text-slate-900">
-                                Himaanix Trading Private Limited
-                            </h4>
+                    <div className="mt-6">
+                        {/* Fix #4: removed uppercase, converted to title case */}
+                        <p className="text-xs font-medium tracking-[0.25em] text-gray-500">
+                            Himaanix Trading Private Limited
+                        </p>
 
-                            <p className="font-medium text-slate-800">
-                                Delhi Registration
-                            </p>
-                            <p>GSTIN: 07AAICH8742H1ZA</p>
-                            <p>
-                                Registered Office: 1295 First Floor, Pan Mandi,
-                                Sadar Bazar, Delhi — 110006
-                            </p>
-                        </div>
+                        <div className="mt-4 space-y-4 text-xs leading-5 text-gray-600">
+                            <div>
+                                <h3 className="mb-1 font-semibold text-slate-900">
+                                    Delhi Registration
+                                </h3>
 
-                        <div>
-                            <p className="font-medium text-slate-800">
-                                Rajasthan Registration
-                            </p>
-                            <p>GSTIN: 08AAICH8742H1Z8</p>
-                            <p>
-                                Registered Office: F-105 Vijay Laxmi Tower,
-                                Central Spine, Vidhyadhar Nagar, Jaipur,
-                                Rajasthan — 302039
-                            </p>
-                        </div>
+                                <p className="normal-case">
+                                    <span className="font-semibold">
+                                        GSTIN:
+                                    </span>{" "}
+                                    <span aria-label="GSTIN number 07AAICH8742H1ZA">
+                                        07AAICH8742H1ZA
+                                    </span>
+                                </p>
 
-                        <div className="space-y-2 break-words">
-                            <p>CIN: U47711DC2026PTC473946</p>
+                                <p>
+                                    Registered Office: 1295 First Floor, Pan
+                                    Mandi, Sadar Bazar, Delhi — 110006
+                                </p>
+                            </div>
 
-                            <p>
-                                Grievance Officer:{" "}
-                                <span className="font-medium text-slate-900">
-                                    Premjeet
-                                </span>
-                            </p>
+                            <div>
+                                <h3 className="mb-1 font-semibold text-slate-900">
+                                    Rajasthan Registration
+                                </h3>
 
-                            <p>
-                                Grievance Officer Email:{" "}
-                                <a
-                                    href="mailto:himaanixtrading@gmail.com"
-                                    className="hover:text-pink-600"
-                                >
-                                    himaanixtrading@gmail.com
-                                </a>
-                            </p>
+                                <p className="normal-case">
+                                    <span className="font-semibold">
+                                        GSTIN:
+                                    </span>{" "}
+                                    <span aria-label="GSTIN number 08AAICH8742H1Z8">
+                                        08AAICH8742H1Z8
+                                    </span>
+                                </p>
 
-                            <p>
-                                Grievance Officer Mobile:{" "}
-                                <a
-                                    href="tel:+919650300157"
-                                    className="hover:text-pink-600"
-                                >
-                                    +91 9650300157
-                                </a>
-                            </p>
+                                <p>
+                                    Registered Office: F-105 Vijay Laxmi Tower,
+                                    Central Spine, Vidhyadhar Nagar, Jaipur,
+                                    Rajasthan — 302039
+                                </p>
+                            </div>
 
-                            <p>
-                                Contact &amp; Support Mobile:{" "}
-                                <a
-                                    href="tel:+918958975608"
-                                    className="hover:text-pink-600"
-                                >
-                                    +91 8958975608
-                                </a>
-                            </p>
+                            <div className="space-y-1 break-words">
+                                <p className="normal-case">
+                                    CIN: U47711DC2026PTC473946
+                                </p>
 
-                            <p>
-                                Contact &amp; Support Email:{" "}
-                                <a
-                                    href="mailto:himaanixtrading@gmail.com"
-                                    className="hover:text-pink-600"
-                                >
-                                    himaanixtrading@gmail.com
-                                </a>
-                            </p>
+                                <p>
+                                    Grievance Officer:{" "}
+                                    <span className="font-medium text-slate-900">
+                                        Premjeet
+                                    </span>
+                                </p>
+
+                                <p>
+                                    Grievance Officer Email:{" "}
+                                    <a
+                                        href="mailto:himaanixtrading@gmail.com"
+                                        className="hover:underline"
+                                    >
+                                        himaanixtrading@gmail.com
+                                    </a>
+                                </p>
+
+                                <p>
+                                    Grievance Officer Mobile:{" "}
+                                    <a
+                                        href="tel:+919650300157"
+                                        className="hover:underline"
+                                    >
+                                        +91 9650300157
+                                    </a>
+                                </p>
+
+                                <p>
+                                    Contact &amp; Support Mobile:{" "}
+                                    <a
+                                        href="tel:+918958975608"
+                                        className="hover:underline"
+                                    >
+                                        +91 8958975608
+                                    </a>
+                                </p>
+
+                                <p>
+                                    Contact &amp; Support Email:{" "}
+                                    <a
+                                        href="mailto:himaanixtrading@gmail.com"
+                                        className="hover:underline"
+                                    >
+                                        himaanixtrading@gmail.com
+                                    </a>
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Legal */}
+                {/* Legal links */}
                 <FooterLinks title="Legal" links={legalLinks} />
 
-                {/* Company */}
+                {/* Company links */}
                 <FooterLinks title="Company" links={companyLinks} />
 
-                {/* Shop and social links */}
-                <div className="min-w-0">
-                    <FooterLinks title="Shop" links={shopLinks} />
+                {/* Shop links and social media */}
+                <div className="flex flex-col items-start gap-3">
+                    <h3 className="mb-2 text-xs font-medium uppercase tracking-[0.28em] text-gray-500">
+                        Shop
+                    </h3>
 
-                    <div className="mt-7">
-                        <h3 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-500">
-                            Follow Us
-                        </h3>
+                    {shopLinks.map((item) => (
+                        <Link
+                            key={item.label}
+                            to={item.href}
+                            className="text-sm text-gray-600 transition-opacity hover:opacity-60"
+                        >
+                            {item.label}
+                        </Link>
+                    ))}
 
-                        <div className="flex items-center gap-4">
-                            <a
-                                href="https://instagram.com"
-                                target="_blank"
-                                rel="noreferrer"
-                                aria-label="Instagram"
-                                className="text-slate-600 transition hover:text-pink-600"
-                            >
-                                <Instagram size={19} strokeWidth={1.6} />
-                            </a>
+                    <div className="mt-3 flex items-center gap-4 text-gray-600">
+                        <a
+                            href="https://instagram.com"
+                            aria-label="Instagram"
+                            className="transition-opacity hover:opacity-60"
+                        >
+                            <Instagram size={18} />
+                        </a>
 
-                            <a
-                                href="https://facebook.com"
-                                target="_blank"
-                                rel="noreferrer"
-                                aria-label="Facebook"
-                                className="text-slate-600 transition hover:text-pink-600"
-                            >
-                                <Facebook size={19} strokeWidth={1.6} />
-                            </a>
+                        <a
+                            href="https://facebook.com"
+                            aria-label="Facebook"
+                            className="transition-opacity hover:opacity-60"
+                        >
+                            <Facebook size={18} />
+                        </a>
 
-                            <a
-                                href="https://youtube.com"
-                                target="_blank"
-                                rel="noreferrer"
-                                aria-label="YouTube"
-                                className="text-slate-600 transition hover:text-pink-600"
-                            >
-                                <Youtube size={20} strokeWidth={1.6} />
-                            </a>
-                        </div>
+                        <a
+                            href="https://youtube.com"
+                            aria-label="YouTube"
+                            className="transition-opacity hover:opacity-60"
+                        >
+                            <Youtube size={18} />
+                        </a>
                     </div>
                 </div>
             </section>
 
             {/* Copyright */}
-            <div className="border-t border-gray-200 px-6 py-5 sm:px-10 lg:px-12 xl:px-16">
-                <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-2 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
-                    <p>
-                        © {new Date().getFullYear()} Himaanix Trading Private Limited.
-                        All rights reserved.
-                    </p>
+            <div className="border-t border-gray-200 bg-white px-6 py-5 sm:px-10">
+                <div className="mx-auto flex max-w-[1450px] flex-col items-start justify-between gap-2 text-xs text-gray-500 sm:flex-row sm:items-center">
+                    <span>
+                        © {new Date().getFullYear()} Himaanix Trading Private
+                        Limited. All rights reserved.
+                    </span>
 
-                    <p>Made with care in India</p>
+                    <span>Made with care in India</span>
                 </div>
             </div>
         </footer>

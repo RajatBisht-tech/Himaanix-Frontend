@@ -6,389 +6,465 @@ import {
   ShoppingBag,
   UserRound,
   LogOut,
+  ChevronUp,
   ChevronDown,
   Menu,
   X,
 } from "lucide-react";
-
 import { useStore } from "../context/StoreContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
-
-const navigation = [
-  { label: "Women", path: "/shop?category=women" },
-  { label: "Men", path: "/shop?category=men" },
-  { label: "Kids", path: "/shop?category=kids" },
-  { label: "All Collections", path: "/shop" },
-  { label: "Blog", path: "/blog" },
-];
+import { useLocation } from "react-router-dom";
 
 export default function Header() {
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [accountOpen, setAccountOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [openNavMenu, setOpenNavMenu] = useState("");
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const profileMenuRef = useRef(null);
+  const navMenuRef = useRef(null);
 
-  const accountRef = useRef(null);
-  const navigate = useNavigate();
-
-  const { cartCount = 0, wishlist = [] } = useStore();
+  const { cartCount, wishlist } = useStore();
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const isShoesPage = pathname.startsWith("/shoes/");
+  const isWatchesPage = pathname.startsWith("/watches/");
 
-  const wishlistCount = Array.isArray(wishlist) ? wishlist.length : 0;
+  const primaryCategories = [
+    
+    { label: "Women", path: "/shop?category=Women" },
+    { label: "Men", path: "/shop?category=Men" },
+    { label: "Shoes", children: [
+      { label: "Men", path: "/shoes/men" },
+      { label: "Women", path: "/shoes/women" },
+    ] },
+    { label: "Watches", children: [
+      { label: "Men", path: "/watches/men" },
+      { label: "Women", path: "/watches/women" },
+    ] },
+    { label: "Kids", path: "/shop?category=Kids" },
+    { label: "All Collections ", path: "/shop" },
+    { label: "Blog", path: "/blog" },
+  ];
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+
+    const value = query.trim();
+
+    navigate(
+      value ? `/shop?search=${encodeURIComponent(value)}` : "/shop"
+    );
+
+    setMenuOpen(false);
+  };
+
+  const closeMenu = () => setMenuOpen(false);
+  const closeNavMenu = () => setOpenNavMenu("");
+  const handleLogout = () => {
+    signOut();
+    setMenuOpen(false);
+    setProfileMenuOpen(false);
+    navigate("/");
+  };
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        accountRef.current &&
-        !accountRef.current.contains(event.target)
-      ) {
-        setAccountOpen(false);
+    const handlePointerDown = (event) => {
+      if (!profileMenuRef.current?.contains(event.target)) {
+        setProfileMenuOpen(false);
+      }
+      if (!navMenuRef.current?.contains(event.target)) {
+        setOpenNavMenu("");
       }
     };
-
-    const handleEscape = (event) => {
-      if (event.key === "Escape") {
-        setAccountOpen(false);
-        setMobileMenuOpen(false);
-        setSearchOpen(false);
-      }
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") setProfileMenuOpen(false);
+      if (event.key === "Escape") setOpenNavMenu("");
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleEscape);
-
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
-  const closeMenu = () => {
-    setMobileMenuOpen(false);
-    setAccountOpen(false);
-  };
-
-  const handleSearch = (event) => {
-    event.preventDefault();
-
-    const query = searchTerm.trim();
-
-    if (!query) return;
-
-    navigate(`/shop?search=${encodeURIComponent(query)}`);
-    setSearchOpen(false);
-    setMobileMenuOpen(false);
-    setSearchTerm("");
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      setAccountOpen(false);
-      setMobileMenuOpen(false);
-      navigate("/");
-    } catch (error) {
-      console.error("Unable to sign out:", error);
-    }
-  };
-
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white">
-      {/* Main header — wider container */}
-      <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-12 xl:px-16">
-        <div className="flex h-[76px] items-center justify-between gap-4">
-          {/* Logo + brand name */}
-          <Link
-            to="/"
-            onClick={closeMenu}
-            aria-label="HIMAANIX home"
-            className="flex shrink-0 items-center gap-2.5 no-underline"
-          >
-            <img
-              src="/logo.png"
-              alt="HIMAANIX logo"
-              className="h-11 w-11 shrink-0 object-contain sm:h-12 sm:w-12"
-            />
+    <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white text-slate-800">
+      {/* Main Header */}
+      <div className="mx-auto flex min-h-[72px] items-center gap-3 px-4 sm:px-6 lg:gap-5 lg:px-8 xl:px-12">
+        {/* Mobile Menu Button */}
+        <button
+          type="button"
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="shrink-0 rounded-md p-1.5 text-slate-800 transition hover:bg-gray-100 lg:hidden"
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={menuOpen}
+        >
+          {menuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
 
-            <span className="font-sans text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-              HIMAANIX
-            </span>
-          </Link>
+        {/* Himaanix Logo */}
+        <Link
+          to="/"
+          onClick={closeMenu}
+          className="flex shrink-0 items-center gap-1 whitespace-nowrap no-underline"
+          aria-label="Himaanix home"
+        >
+          <span className="grid h-7 w-7 place-items-center rounded-full bg-pink-600 font-serif text-lg font-bold text-white">
+            H
+          </span>
 
-          {/* Desktop navigation */}
-          <nav
-            aria-label="Main navigation"
-            className="hidden items-center gap-6 lg:flex xl:gap-8"
-          >
-            {navigation.map((item) => (
-              <Link
-                key={item.label}
-                to={item.path}
-                className="whitespace-nowrap text-sm font-medium text-gray-700 transition-colors hover:text-black"
+          <span className="text-2xl font-extrabold tracking-[-1px] text-slate-900">
+            himaanix
+          </span>
+
+          {/* Fix #1: text-[9px] → text-xs */}
+          <span className="self-start text-xs text-slate-700">
+            ®
+          </span>
+        </Link>
+
+        {/* Desktop Navigation */}
+        <nav
+          ref={navMenuRef}
+          className="ml-auto hidden shrink-0 items-center gap-6 whitespace-nowrap lg:flex xl:gap-8"
+          aria-label="Main navigation"
+        >
+          {primaryCategories.map((category) => (
+            category.children ? (
+              <div
+                key={category.label}
+                className="relative"
+                onMouseEnter={() => setOpenNavMenu(category.label)}
+                onMouseLeave={() =>
+                  setOpenNavMenu((open) =>
+                    open === category.label ? "" : open
+                  )
+                }
               >
-                {item.label}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenNavMenu((open) =>
+                      open === category.label ? "" : category.label
+                    )
+                  }
+                  aria-expanded={openNavMenu === category.label}
+                  aria-haspopup="menu"
+                  className={`flex min-h-[72px] items-center gap-1 border-b-2 text-base font-semibold capitalize transition hover:border-pink-600 hover:text-pink-600 ${
+                    (category.label === "Shoes" && isShoesPage) ||
+                    (category.label === "Watches" && isWatchesPage) ||
+                    openNavMenu === category.label
+                      ? "border-pink-600 text-pink-600"
+                      : "border-transparent text-slate-800"
+                  }`}
+                >
+                  {category.label}
+                  <ChevronDown
+                    size={15}
+                    className={`transition-transform ${openNavMenu === category.label ? "rotate-180" : ""}`}
+                  />
+                </button>
+                {openNavMenu === category.label && (
+                  <div
+                    role="menu"
+                    className="absolute left-0 top-full z-[60] min-w-40 border border-gray-100 bg-white py-2 shadow-lg"
+                  >
+                    {category.children.map((child) => (
+                      <Link
+                        key={child.path}
+                        to={child.path}
+                        role="menuitem"
+                        onClick={closeNavMenu}
+                        className="block px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-gray-50 hover:text-pink-600"
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                key={category.label}
+                to={category.path}
+                className="flex min-h-[72px] items-center gap-1 border-b-2 border-transparent text-base font-semibold capitalize text-slate-800 transition hover:border-pink-600 hover:text-pink-600"
+              >
+                {category.label}
               </Link>
-            ))}
-          </nav>
+            )
+          ))}
+        </nav>
 
-          {/* Desktop search — slightly wider */}
-          <form
-            onSubmit={handleSearch}
-            className="hidden max-w-[280px] flex-1 items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-2 xl:flex"
-            role="search"
-          >
-            <Search size={17} className="shrink-0 text-gray-500" />
+        {/* Desktop Search */}
+        <form
+          onSubmit={handleSearch}
+          className="hidden h-12 min-w-[220px] max-w-[420px] flex-1 items-center gap-3 border-b border-gray-300 bg-gray-50 px-4 focus-within:border-pink-600 focus-within:bg-white md:flex lg:ml-2"
+        >
+          <Search
+            size={23}
+            className="shrink-0 text-slate-500"
+          />
 
-            <input
-              type="search"
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search products..."
-              aria-label="Search products"
-              className="ml-2 w-full bg-transparent text-sm outline-none placeholder:text-gray-400"
-            />
-          </form>
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search products, styles, brands"
+            aria-label="Search products"
+            className="min-w-0 flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-500"
+          />
 
-          {/* Header actions */}
-          <div className="flex shrink-0 items-center gap-3 sm:gap-4">
-            {/* Mobile/tablet search toggle */}
+          {query && (
             <button
               type="button"
-              onClick={() => setSearchOpen((open) => !open)}
-              aria-label={searchOpen ? "Close search" : "Open search"}
-              className="p-1.5 text-gray-700 transition hover:text-black xl:hidden"
+              onClick={() => setQuery("")}
+              className="shrink-0 text-slate-500 transition hover:text-pink-600"
+              aria-label="Clear search"
             >
-              {searchOpen ? <X size={21} /> : <Search size={21} />}
+              <X size={17} />
             </button>
+          )}
+        </form>
 
-            {/* Account dropdown */}
-            <div ref={accountRef} className="relative hidden sm:block">
+        {/* Account, Wishlist and Cart */}
+        <div className="ml-auto flex shrink-0 items-center justify-end gap-5 sm:gap-7 lg:ml-0 lg:gap-8">
+          {/* Account */}
+          {user ? (
+            <div className="relative" ref={profileMenuRef}>
               <button
                 type="button"
-                onClick={() => setAccountOpen((open) => !open)}
-                aria-expanded={accountOpen}
-                aria-label="Account menu"
-                className="flex items-center gap-1.5 text-gray-700 transition hover:text-black"
+                onClick={() => setProfileMenuOpen((open) => !open)}
+                aria-expanded={profileMenuOpen}
+                aria-haspopup="menu"
+                className="flex min-w-[172px] items-center gap-3 rounded border border-gray-200 bg-white px-2.5 py-1.5 text-left transition hover:border-gray-300"
               >
-                <UserRound size={21} />
-                <span className="hidden max-w-24 truncate text-sm md:inline">
-                  {user?.name || "Account"}
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded bg-slate-100 text-sm font-semibold text-slate-800">
+                  {user.name?.trim()?.charAt(0)?.toUpperCase() || <UserRound size={18} />}
                 </span>
-                <ChevronDown
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-xs font-bold uppercase tracking-wide text-slate-900">
+                    {user.role === "admin" ? "Administrator" : user.name}
+                  </span>
+                  <span className="mt-0.5 block text-[10px] uppercase tracking-wide text-amber-600">
+                    {user.role || "User"}
+                  </span>
+                </span>
+                <ChevronUp
                   size={15}
-                  className={`transition-transform ${accountOpen ? "rotate-180" : ""
-                    }`}
+                  className={`shrink-0 text-slate-500 transition-transform ${profileMenuOpen ? "" : "rotate-180"}`}
                 />
               </button>
 
-              {accountOpen && (
-                <div className="absolute right-0 top-full mt-4 w-56 rounded-xl border border-gray-100 bg-white p-2 shadow-xl">
-                  {user ? (
-                    <>
-                      <div className="border-b border-gray-100 px-3 py-3">
-                        <p className="truncate text-sm font-semibold text-gray-900">
-                          {user.name || "Welcome"}
-                        </p>
-                        {user.email && (
-                          <p className="mt-1 truncate text-xs text-gray-500">
-                            {user.email}
-                          </p>
-                        )}
-                      </div>
-
-                      <Link
-                        to="/account"
-                        onClick={() => setAccountOpen(false)}
-                        className="block rounded-lg px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      >
-                        My Account
-                      </Link>
-
-                      <Link
-                        to="/orders"
-                        onClick={() => setAccountOpen(false)}
-                        className="block rounded-lg px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      >
-                        My Orders
-                      </Link>
-
-                      <button
-                        type="button"
-                        onClick={handleSignOut}
-                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm text-red-600 hover:bg-red-50"
-                      >
-                        <LogOut size={16} />
-                        Sign Out
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <Link
-                        to="/login"
-                        onClick={() => setAccountOpen(false)}
-                        className="block rounded-lg px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      >
-                        Sign In
-                      </Link>
-
-                      <Link
-                        to="/register"
-                        onClick={() => setAccountOpen(false)}
-                        className="block rounded-lg px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      >
-                        Create Account
-                      </Link>
-                    </>
-                  )}
+              {profileMenuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-full z-[60] mt-3 w-52 overflow-hidden rounded border border-gray-200 bg-white py-1 text-sm text-slate-700 shadow-xl"
+                >
+                  <Link
+                    to="/account"
+                    role="menuitem"
+                    onClick={() => setProfileMenuOpen(false)}
+                    className="flex items-center gap-3 border-b border-gray-100 px-4 py-3 transition hover:bg-gray-50 hover:text-slate-900"
+                  >
+                    <UserRound size={17} />
+                    My Profile
+                  </Link>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-pink-600 transition hover:bg-gray-50 hover:text-pink-700"
+                  >
+                    <LogOut size={17} />
+                    Logout
+                  </button>
                 </div>
               )}
             </div>
-
-            {/* Wishlist */}
+          ) : (
             <Link
-              to="/wishlist"
-              onClick={closeMenu}
-              aria-label={`Wishlist, ${wishlistCount} items`}
-              className="relative p-1 text-gray-700 transition hover:text-black"
+              to="/login"
+              className="flex flex-col items-center gap-1 text-slate-800 no-underline transition hover:text-pink-600"
             >
-              <Heart size={22} />
-
-              {wishlistCount > 0 && (
-                <span className="absolute -right-2 -top-2 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-black px-1 text-[10px] font-semibold text-white">
-                  {wishlistCount > 99 ? "99+" : wishlistCount}
-                </span>
-              )}
+              <UserRound size={25} strokeWidth={1.7} />
+              <span className="hidden text-sm font-medium sm:block">Account</span>
             </Link>
+          )}
 
-            {/* Shopping bag */}
-            <Link
-              to="/cart"
-              onClick={closeMenu}
-              aria-label={`Shopping bag, ${cartCount} items`}
-              className="relative p-1 text-gray-700 transition hover:text-black"
-            >
-              <ShoppingBag size={22} />
-
-              {cartCount > 0 && (
-                <span className="absolute -right-2 -top-2 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-black px-1 text-[10px] font-semibold text-white">
-                  {cartCount > 99 ? "99+" : cartCount}
-                </span>
-              )}
-            </Link>
-
-            {/* Mobile menu toggle */}
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen((open) => !open)}
-              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={mobileMenuOpen}
-              className="p-1.5 text-gray-800 lg:hidden"
-            >
-              {mobileMenuOpen ? <X size={23} /> : <Menu size={23} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile/tablet search form */}
-        {searchOpen && (
-          <form
-            onSubmit={handleSearch}
-            role="search"
-            className="border-t border-gray-100 py-3 xl:hidden"
+          {/* Wishlist */}
+          <Link
+            to="/wishlist"
+            className="flex flex-col items-center gap-1 text-slate-800 no-underline transition hover:text-pink-600"
           >
-            <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2.5">
-              <Search size={18} className="shrink-0 text-gray-500" />
+            <span className="relative">
+              <Heart size={27} strokeWidth={1.7} />
 
-              <input
-                autoFocus
-                type="search"
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search products..."
-                aria-label="Search products"
-                className="w-full bg-transparent text-sm outline-none"
-              />
+              {wishlist.length > 0 && (
+                /* Fix #1: text-[10px] → text-xs */
+                <span className="absolute -right-2 -top-2 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-pink-700 px-1 text-xs font-bold text-white">
+                  {wishlist.length}
+                </span>
+              )}
+            </span>
 
-              <button
-                type="submit"
-                className="text-sm font-semibold text-gray-900"
-              >
-                Search
-              </button>
-            </div>
-          </form>
+            <span className="hidden text-sm font-medium sm:block">
+              Wishlist
+            </span>
+          </Link>
+
+          {/* Cart */}
+          <Link
+            to="/cart"
+            className="flex flex-col items-center gap-1 text-slate-800 no-underline transition hover:text-pink-600"
+          >
+            <span className="relative">
+              <ShoppingBag size={27} strokeWidth={1.7} />
+
+              {/* Fix #1: text-[10px] → text-xs */}
+              <span className="absolute -right-2 -top-2 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-pink-700 px-1 text-xs font-bold text-white">
+                {cartCount}
+              </span>
+            </span>
+
+            <span className="hidden text-sm font-medium sm:block">
+              Cart
+            </span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Mobile Search */}
+      <form
+        onSubmit={handleSearch}
+        className="flex items-center gap-3 border-t border-gray-100 bg-white px-4 py-2.5 md:hidden"
+      >
+        <Search
+          size={20}
+          className="shrink-0 text-slate-500"
+        />
+
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search products, styles, brands"
+          aria-label="Search products"
+          className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-slate-500"
+        />
+
+        {query && (
+          <button
+            type="button"
+            onClick={() => setQuery("")}
+            aria-label="Clear search"
+            className="text-slate-500 hover:text-pink-600"
+          >
+            <X size={17} />
+          </button>
         )}
+      </form>
 
-        {/* Mobile navigation */}
-        {mobileMenuOpen && (
-          <div className="border-t border-gray-100 py-4 lg:hidden">
-            <nav
-              aria-label="Mobile navigation"
-              className="flex flex-col"
-            >
-              {navigation.map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.path}
-                  onClick={closeMenu}
-                  className="border-b border-gray-100 px-2 py-3.5 text-sm font-medium text-gray-800 transition hover:bg-gray-50"
+      {/* Mobile Navigation */}
+      {menuOpen && (
+        <nav
+          className="absolute left-0 right-0 top-full flex max-h-[75vh] flex-col overflow-y-auto border-t border-gray-100 bg-white px-5 py-2 shadow-xl lg:hidden"
+          aria-label="Mobile navigation"
+        >
+          {primaryCategories.map((category) => (
+            category.children ? (
+              <div key={category.label} className="border-b border-gray-100">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenNavMenu((open) =>
+                      open === category.label ? "" : category.label
+                    )
+                  }
+                  aria-expanded={openNavMenu === category.label}
+                  className={`flex min-h-12 w-full items-center justify-between text-left text-sm font-medium transition hover:text-pink-600 ${
+                    (category.label === "Shoes" && isShoesPage) ||
+                    (category.label === "Watches" && isWatchesPage)
+                      ? "text-pink-600"
+                      : "text-slate-800"
+                  }`}
                 >
-                  {item.label}
-                </Link>
-              ))}
-
-              <div className="mt-3 flex flex-col gap-1 sm:hidden">
-                {user ? (
-                  <>
-                    <Link
-                      to="/account"
-                      onClick={closeMenu}
-                      className="rounded-lg px-2 py-3 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      My Account
-                    </Link>
-
-                    <Link
-                      to="/orders"
-                      onClick={closeMenu}
-                      className="rounded-lg px-2 py-3 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      My Orders
-                    </Link>
-
-                    <button
-                      type="button"
-                      onClick={handleSignOut}
-                      className="flex items-center gap-2 rounded-lg px-2 py-3 text-left text-sm text-red-600 hover:bg-red-50"
-                    >
-                      <LogOut size={17} />
-                      Sign Out
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      to="/login"
-                      onClick={closeMenu}
-                      className="rounded-lg px-2 py-3 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      Sign In
-                    </Link>
-
-                    <Link
-                      to="/register"
-                      onClick={closeMenu}
-                      className="rounded-lg px-2 py-3 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      Create Account
-                    </Link>
-                  </>
+                  {category.label}
+                  <ChevronDown
+                    size={16}
+                    className={`text-gray-400 transition-transform ${openNavMenu === category.label ? "rotate-180" : ""}`}
+                  />
+                </button>
+                {openNavMenu === category.label && (
+                  <div className="pb-2 pl-4">
+                    {category.children.map((child) => (
+                      <Link
+                        key={child.path}
+                        to={child.path}
+                        onClick={() => {
+                          closeMenu();
+                          closeNavMenu();
+                        }}
+                        className="flex min-h-10 items-center text-sm text-slate-600 transition hover:text-pink-600"
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
                 )}
               </div>
-            </nav>
-          </div>
-        )}
-      </div>
+            ) : (
+              <Link
+                key={category.label}
+                to={category.path}
+                onClick={closeMenu}
+                className="flex min-h-12 items-center justify-between border-b border-gray-100 text-sm font-medium text-slate-800 transition hover:text-pink-600"
+              >
+                {category.label}
+                <span className="text-xl text-gray-400">›</span>
+              </Link>
+            )
+          ))}
+
+          <Link
+            to="/shop?category=New%20Arrivals"
+            onClick={closeMenu}
+            className="flex min-h-12 items-center justify-between border-b border-gray-100 text-sm font-medium text-slate-800 hover:text-pink-600"
+          >
+            New Arrivals
+            <span className="text-xl text-gray-400">›</span>
+          </Link>
+
+          <Link
+            to="/shop?sale=true"
+            onClick={closeMenu}
+            className="flex min-h-12 items-center justify-between text-sm font-semibold text-pink-600"
+          >
+            Sale
+            <span className="text-xl">›</span>
+          </Link>
+          <Link
+            to={user ? "/account" : "/login"}
+            onClick={closeMenu}
+            className="flex min-h-12 items-center justify-between border-t border-gray-100 text-sm font-semibold text-slate-800"
+          >
+            {user ? "My Profile" : "Account"}
+            <span className="text-xl text-gray-400">›</span>
+          </Link>
+          {user && (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex min-h-12 items-center justify-between text-left text-sm font-semibold text-pink-600"
+            >
+              Logout
+              <LogOut size={18} />
+            </button>
+          )}
+        </nav>
+      )}
     </header>
   );
 }
