@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -7,7 +7,7 @@ import {
   PackageCheck,
   ShieldCheck,
 } from "lucide-react";
-import { createOrder } from "../api/orderApi.js";
+import { createOrder, getPaymentMethods, verifyRazorpayPayment } from "../api/orderApi.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useStore } from "../context/StoreContext.jsx";
 import { getOrderNumber } from "../utils/orderNumber.js";
@@ -29,6 +29,26 @@ const hasAvailableStock = (value, required = 1) => {
   if (!Number.isFinite(stock)) return true;
   return stock >= required;
 };
+
+const loadRazorpayCheckout = () =>
+  new Promise((resolve, reject) => {
+    if (window.Razorpay) return resolve(window.Razorpay);
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(window.Razorpay);
+    script.onerror = () => reject(new Error("Unable to load Razorpay Checkout."));
+    document.body.appendChild(script);
+  });
+
+const loadCashfreeCheckout = () =>
+  new Promise((resolve, reject) => {
+    if (window.Cashfree) return resolve(window.Cashfree);
+    const script = document.createElement("script");
+    script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";
+    script.onload = () => resolve(window.Cashfree);
+    script.onerror = () => reject(new Error("Unable to load Cashfree Checkout."));
+    document.body.appendChild(script);
+  });
 
 const findVariant = (product, size, color) =>
   product.variants?.find(
@@ -77,6 +97,8 @@ export default function CheckoutPage() {
   const { user, token } = useAuth();
   const { cart, cartTotal, clearCart } = useStore();
   const [selectedVariants, setSelectedVariants] = useState({});
+  const [paymentMethod, setPaymentMethod] = useState("cod");
+  const [availablePaymentMethods, setAvailablePaymentMethods] = useState({ cod: true });
   const [address, setAddress] = useState({
     fullName: user?.name || "",
     phone: "",
@@ -91,6 +113,12 @@ export default function CheckoutPage() {
   const [error, setError] = useState("");
   const [placedOrderId, setPlacedOrderId] = useState("");
   const [placedOrderNumber, setPlacedOrderNumber] = useState("");
+
+  useEffect(() => {
+    getPaymentMethods()
+      .then(({ data }) => setAvailablePaymentMethods(data?.methods || { cod: true }))
+      .catch(() => setAvailablePaymentMethods({ cod: true }));
+  }, []);
 
   const shippingFee = cartTotal >= 1999 ? 0 : 99;
   const orderTotal = cartTotal + shippingFee;
@@ -160,16 +188,90 @@ export default function CheckoutPage() {
         discount: 0,
         shippingFee,
         total: orderTotal,
-        paymentMethod: "cod",
+        paymentMethod,
       });
 
       if (!data?.success || !data?.order?._id) {
         throw new Error(data?.message || "We couldn't place your order.");
       }
 
+      if (paymentMethod === "phonepe") {
+        if (!data.payment?.redirectUrl) {
+          throw new Error("PhonePe checkout could not be started.");
+        }
+        window.location.assign(data.payment.redirectUrl);
+        return;
+      }
+
+      if (paymentMethod === "payu") {
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = data.payment?.formAction;
+        Object.entries(data.payment?.formFields || {}).forEach(([name, value]) => {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = name;
+          input.value = value;
+          form.appendChild(input);
+        });
+        document.body.appendChild(form);
+        form.submit();
+        return;
+      }
+
+      if (paymentMethod === "cashfree") {
+        const Cashfree = await loadCashfreeCheckout();
+        await Cashfree({ mode: data.payment?.environment || "sandbox" }).checkout({
+          paymentSessionId: data.payment?.paymentSessionId,
+          redirectTarget: "_self",
+        });
+        return;
+      }
+
+      let completedOrder = data.order;
+      if (paymentMethod === "razorpay") {
+        const Razorpay = await loadRazorpayCheckout();
+        completedOrder = await new Promise((resolve, reject) => {
+          const checkout = new Razorpay({
+            key: data.payment?.keyId,
+            order_id: data.payment?.orderId,
+            amount: data.payment?.amount,
+            currency: data.payment?.currency || "INR",
+            name: "Himaanix",
+            description: `Order ${data.order.orderNumber}`,
+            prefill: {
+              name: address.fullName,
+              contact: address.phone,
+              email: user.email || "",
+            },
+            theme: { color: "#e80071" },
+            handler: async (response) => {
+              try {
+                const verification = await verifyRazorpayPayment({
+                  orderId: data.order._id,
+                  razorpayOrderId: response.razorpay_order_id,
+                  razorpayPaymentId: response.razorpay_payment_id,
+                  razorpaySignature: response.razorpay_signature,
+                });
+                if (!verification.data?.success) {
+                  throw new Error(verification.data?.message || "Payment verification failed.");
+                }
+                resolve(verification.data.order || data.order);
+              } catch (verificationError) {
+                reject(verificationError);
+              }
+            },
+            modal: {
+              ondismiss: () => reject(new Error("Payment was cancelled.")),
+            },
+          });
+          checkout.open();
+        });
+      }
+
       clearCart();
-      setPlacedOrderId(data.order._id);
-      setPlacedOrderNumber(getOrderNumber(data.order));
+      setPlacedOrderId(completedOrder._id);
+      setPlacedOrderNumber(getOrderNumber(completedOrder));
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
@@ -402,8 +504,8 @@ export default function CheckoutPage() {
                   type="radio"
                   name="paymentMethod"
                   value="cod"
-                  checked
-                  readOnly
+                  checked={paymentMethod === "cod"}
+                  onChange={(event) => setPaymentMethod(event.target.value)}
                   className="mt-1 accent-pink-600"
                 />
                 <span className="flex-1">
@@ -416,6 +518,38 @@ export default function CheckoutPage() {
                 </span>
                 <Check className="text-pink-600" size={18} />
               </label>
+              {availablePaymentMethods.razorpay && <label className="mt-3 flex cursor-pointer items-start gap-3 border border-gray-200 p-4">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="razorpay"
+                  checked={paymentMethod === "razorpay"}
+                  onChange={(event) => setPaymentMethod(event.target.value)}
+                  className="mt-1 accent-pink-600"
+                />
+                <span className="flex-1">
+                  <span className="block text-sm font-semibold text-slate-900">Razorpay</span>
+                  <span className="mt-1 block text-xs leading-5 text-gray-500">UPI, cards, netbanking and wallets via Razorpay.</span>
+                </span>
+              </label>}
+              {availablePaymentMethods.payu && <label className="mt-3 flex cursor-pointer items-start gap-3 border border-gray-200 p-4">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="payu"
+                  checked={paymentMethod === "payu"}
+                  onChange={(event) => setPaymentMethod(event.target.value)}
+                  className="mt-1 accent-pink-600"
+                />
+                <span className="flex-1">
+                  <span className="block text-sm font-semibold text-slate-900">PayU</span>
+                  <span className="mt-1 block text-xs leading-5 text-gray-500">Continue securely to PayU Checkout.</span>
+                </span>
+              </label>}
+              {availablePaymentMethods.cashfree && <label className="mt-3 flex cursor-pointer items-start gap-3 border border-gray-200 p-4">
+                <input type="radio" name="paymentMethod" value="cashfree" checked={paymentMethod === "cashfree"} onChange={(event) => setPaymentMethod(event.target.value)} className="mt-1 accent-pink-600" />
+                <span className="flex-1"><span className="block text-sm font-semibold text-slate-900">Cashfree</span><span className="mt-1 block text-xs leading-5 text-gray-500">UPI, cards and netbanking via Cashfree.</span></span>
+              </label>}
               <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-gray-500">
                 <ShieldCheck className="mt-0.5 shrink-0 text-emerald-600" size={16} />
                 Your payment details are not collected on this page.
